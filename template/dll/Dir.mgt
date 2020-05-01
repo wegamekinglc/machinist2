@@ -1,0 +1,43 @@
+%:ListPublicTex:
+%*[public]{
+\input "MG_%_().tex"}
+%:ListSettingsTex:
+%*[settings]{
+\input "MG_%_().tex"}
+%:HTMLPublicIndex:
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<title>%_()</title>
+<link href="tablecloth/tablecloth.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="hbk.css" rel="stylesheet" type="text/css" media="screen" />
+<script type="text/javascript" src="tablecloth/tablecloth.js"></script>
+</head>
+<body>
+<h1>%_() Directory Index</h1>
+
+<table border="1" cellpadding="3">
+<tr><th>Name</th></tr>
+%^[public]{
+<tr><td><a href="MG_%HtmlSafe()_public.htm">%_()</a></td></tr>}
+</table>
+
+</body></html>
+
+`
+%:PublicNameList:`
+%^[public]
+{%_()}`
+%:CppMasterHeader:
+
+#pragma once
+
+// storable
+%*[storable]{class %ExportClass() %_()_;
+}`
+// settings
+%*[settings]{#include "MG_%_().h"
+}`
+// public
+%*[public]{#include "MG_%_()_Direct.h"
+}`

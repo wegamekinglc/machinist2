@@ -1,0 +1,200 @@
+` Schema for ENUMERATION
+%:C++Header:
+class %_()_
+{
+%*[extensible]{%DeclareExtension()}
+private:
+    enum E%_()
+    {
+		%?{%HasNullState()}{_NOT_SET,
+		}`
+		%?{%HasDefault()}{%_(default),
+		}`
+		%*[alternative]{%_(),
+		}`
+		%?{%IsExtensible()}{_EXTENSION,
+		}`
+        _N_VALUES
+    } val_;
+    %?{%IsExtensible()}{%ExtensibleMembers()}
+    %~{%IsExtensible()}{%NonExtensibleMembers()}
+    friend bool operator==(const %_()& lhs, const %_()& rhs);
+	friend struct ReadString%_()_;
+    friend Vector_<%_()> %_()ListAll();
+public:
+    explicit %_()_(const String_& src);
+    const char* String() const;
+    // idiosyncratic (hand-written) members:
+	%*[member]{%_()
+	}
+};
+%:DeclareExtension:
+    // This will be an extensible enum
+public:
+    class Extension_
+    {
+    public:
+        virtual ~Extension_();
+        // Implement %_() interface
+		%*[member]{%~{%_()}const;{%MakeVirtual()}}
+    };
+%:ExtensibleMembers:
+    Handle_<Extension_> other_;
+    const Extension_& Extension() const;
+    %_()(E%_() val) : val_(val) {assert(val < _EXTENSION);}
+    %_()(const Handle_<Extension_>& imp) : val_(_EXTENSION), other_(imp) {assert(imp.get());}
+%:NonExtensibleMembers:
+    %_()(E%_() val) : val_(val) {assert(val < _N_VALUES);}
+%:C++Source:
+namespace
+{
+    Vector_<%_()> The_%_()List()
+    {
+        static Vector_<%_()> RETVAL;
+        return RETVAL;
+    }
+%?{%IsExtensible()}{%TheExtensions()
+
+    void %_()MustFail(const String_& test)	// check added extensions
+    {
+        try
+        {
+            %_() temp(test);
+        }
+        catch (Exception_&)
+        {
+            return;
+        }
+        Throw(Exception_("'" + test + "' is already a %_(), can't be declared again"));
+    }
+}`end IsExtensible() block
+}    // leave local
+
+%?{%IsExtensible()}{%RegisterExtensionAndList()}
+
+const char* %_()_::String() const
+{
+    switch (val_)
+    {
+    default:
+	%?{%HasNullState()}{case _NOT_SET:}
+        return 0;
+	%*[default]{case %_():
+		return %"();
+	}`
+	%*[alternative]{case %_():
+		return %"();
+	}`
+	%?{%IsExtensible()}{case _EXTENSION:
+		return other_->String();}
+    }`
+}
+struct ReadString%_()_
+{
+    bool operator()(const String_& src, %_()_::E%_()* val) const    // returns true iff recognized input
+    {
+        bool retval = true;
+		if (0);	// otiose code to allow regular else-if structure
+		%?{%HasNullState()%HasDefault()}{else if (src.empty())
+			retval = {%?{%HasNullState()}{_NOT_SET}%~{%HasNullState()}{%*[default]{%_()}}
+		%*[default]{%ConstructDefault()}
+		%*[alternative]{%ConstructAlternative()}
+        else
+            retval = false;
+        return retval;
+    }
+};
+
+%_()_::%_()_(const String_& src)
+{
+    static const SReadString%_() READ_FIXED;    // allows precomputation for speed, in constructor
+    if (READ_FIXED(src, &val_))
+        return;
+	%?{%IsExtensible()}{%ConstructExtension()}
+    else
+        Throw(Exception_("'" + src + "' is not a recognizable %_()")); }
+
+%:TheExtensions:
+    map<String_, Handle_<%_()_::Extension_> > The_%_()Extensions()
+    {
+        static map<String_, Handle_<%_()_::Extension_> > RETVAL;
+        return RETVAL;
+    }
+%:RegisterExtensionAndList:
+void %_()RegisterExtension
+    (const Vector_<String_>& names,
+     const Handle_<%_()_::Extension_>& imp) 
+{
+    REQUIRE(The_%_()List().empty(), "Can't register a new %_() after enumerating all values");
+    assert(!imp.Empty());
+    %_()MustFail(imp->String());
+    for (auto pn = names.begin(); pn != names.end(); ++pn)
+    {
+        %_()MustFail(*pn);    // check this name does not already have a meaning
+        The_%_()Extensions()[String::Condensed(*pn)] = imp;
+    }
+    // check that two-way string conversion works
+    %_() check(imp->String());
+    REQUIRE(check.String() == imp->String(), "Incorrect!  String() representation reconstructs the wrong %_()"); 
+}
+
+Vector_<%_()> %_()ListAll()
+{
+    if (The_%_()List().empty())
+    {
+        Vector_<%_()> retval;
+        set<String_> exists;
+        for (auto ii = %_()::E%_()(0); ii < %_()::_EXTENSION; ii = %_()::E%_()(ii + 1))
+        {
+            retval.push_back(%_()(ii));
+            exists.insert(retval.back().String());
+        }
+        auto more = The_%_()Extensions();
+        for (auto pe = more.begin(); pe != more.end(); ++pe)
+        {
+            if (!exists.count(pe->second->String()))
+            {
+                retval.push_back(%_()(pe->second));
+                exists.insert(pe->second->String());
+            }
+        }
+        // store these forever
+        The_%_()List().Swap(&retval);
+    }
+    return The_%_()List();
+}
+%:ListNonExtensible:
+Vector_<%_()> %_()ListAll()
+{
+    if (The_%_()List().empty())
+    {
+        Vector_<%_()> retval;
+        for (auto ii = %_()::E%_()(0); ii < %_()::_N_VALUES; ii = %_()::E%_()(ii + 1))
+        {
+            retval.push_back(%_()(ii));
+        }
+        // store these forever
+        The_%_()List().Swap(&retval);
+    }
+    return The_%_()List();
+}
+%:ConstructAlternative:
+    else if (String::Equivalent(src, %"()))
+        *val_ = %_(\)_::%_();
+	%*[aka]{else if (String::Equivalent(src, %"()))
+		*val = %_(\)_::%_(..);
+	}`
+%:ConstructExtension:
+    else
+    {
+        // check for extensions
+        auto pe = The_%_()Extensions().find(String::Condensed(src));
+        if (pe != The_%_()Extensions().end())
+        {
+            val_ = _EXTENSION;
+            other_ = pe->second;
+        }
+    }
+
+%:HasDefault:%*[default]{1}
+%:IsExtensible:%*[extensible]{1}

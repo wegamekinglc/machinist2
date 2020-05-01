@@ -1,0 +1,324 @@
+` Schema for ENUMERATION
+%:C++Header:
+#pragma once
+
+class %ExportClass() %_()_
+{
+%*[extensible]{%DeclareExtension()}`
+%?{%_(switchable)}{public:
+}`
+    enum E%_()
+    {
+		%~{%HasDefault()}{_NOT_SET=-1,
+}`
+%*[alternative]{%?{%*[numeric]{1}}{		%_() = %_(numeric),		` emit all numeric values before any others
+}}`
+%MaxNumericSentinel()`
+%*[alternative]{%~{%*[numeric]{1}}{		%_(),
+}}`
+%?{%IsExtensible()}{		_EXTENSION,
+}`
+        _N_VALUES
+    } val_;
+    %?{%IsExtensible()}{%ExtensibleMembers()}`
+    %~{%IsExtensible()}{%NonExtensibleMembers()}`
+%?{%_(switchable)}{private:
+}`
+    friend %ExportFunc() bool operator==(const %_()_& lhs, const %_()_& rhs);
+	friend struct ReadString%_()_;
+    friend std::vector<%_()_> %_()ListAll();
+	friend bool operator<(const %_()_& lhs, const %_()_& rhs){return lhs.val_ < rhs.val_;}
+public:
+    explicit %_()_(const String_& src);
+    const char* String() const;
+%?{%_(switchable)}{	E%_() Switch() const {return val_;}
+}`
+    // idiosyncratic (hand-written) members:
+	%*[method]{%_()
+	}
+	%~{%HasDefault()}{%_(/)_():val_(_NOT_SET){};}
+	%*[alternative]{%?{%_(default)}{%_(/)_():val_(%_()){};}}
+};
+
+%ExportFunc() bool operator==(const %_()_& lhs, const %_()_& rhs); 
+inline bool operator!=(const %_()_& lhs, const %_()_& rhs) {return !(lhs == rhs);}
+%?{%_(switchable)}{inline bool operator==(const %_()_& lhs, %_()_::E%_() rhs) {return lhs.Switch() == rhs;}
+inline bool operator!=(const %_()_& lhs, %_()_::E%_() rhs) {return lhs.Switch() != rhs;}
+}`
+%?{%_(legacy)}{
+%LegacyHeader()
+}`
+%:DeclareExtension:
+    // This will be an extensible enum
+public:
+    class Extension_
+    {
+    public:
+        virtual ~Extension_();
+        // Implement %_() interface
+		%*[method]{%~{%_()}const;{%MakeVirtual()}}
+    };
+%:ExtensibleMembers:
+    Handle_<Extension_> other_;
+    const Extension_& Extension() const;
+    %_()_(E%_() val) : val_(val) {assert(val < _EXTENSION);}
+    %_()_(const Handle_<Extension_>& imp) : val_(_EXTENSION), other_(imp) {assert(imp.get());}
+%:NonExtensibleMembers:
+    %_()_(E%_() val) : val_(val) {assert(val < _N_VALUES);}
+%:C++Source:
+bool operator==(const %_()_& lhs, const %_()_& rhs) {return lhs.val_ == rhs.val_;}
+namespace
+{
+    std::vector<%_()_> The_%_()List()
+    {
+        static std::vector<%_()_> RETVAL;
+        return RETVAL;
+    }
+%?{%IsExtensible()}{%TheExtensions()
+
+    void %_()MustFail(const String_& test)	// check added extensions
+    {
+        try
+        {
+            %_() temp(test);
+        }
+        catch (Exception_&)
+        {
+            return;
+        }
+        Throw(Exception_("'" + test + "' is already a %_(), can't be declared again"));
+    }
+}`end IsExtensible() block
+}    // leave local
+
+%?{%IsExtensible()}{%RegisterExtensionAndList()}
+
+const char* %_()_::String() const
+{
+    switch (val_)
+    {
+    default:
+	%~{%HasDefault()}{case _NOT_SET:}
+        return 0;
+	%*[default]{case %_():
+		return %"();
+	}`
+	%*[alternative]{case %_():
+		return %"();
+	}`
+	%?{%IsExtensible()}{case _EXTENSION:
+		return other_->String();}
+    }`
+}
+struct ReadString%_()_
+{
+    bool operator()(const String_& src, %_()_::E%_()* val) const    // returns true iff recognized input
+    {
+        bool retval = true;
+		if (0);	// otiose code to allow regular else-if structure
+		%?{1}{else if (src.empty())
+			{retval = %~{%HasDefault()}{false;}%?{%HasDefault()}{true;%ConstructDefault()}}
+		%*[alternative]{%ConstructAlternative()}`
+        else
+            retval = false;
+        return retval;
+    }}
+};
+
+%_()_::%_()_(const String_& src)
+{
+    static const ReadString%_()_ READ_FIXED;    // allows precomputation for speed, in constructor
+    if (READ_FIXED(src, &val_))
+        return;
+%?{%IsExtensible()}{%ConstructExtension()}`
+    else
+        throw ProBase::Exception_("'" + src + "' is not a recognizable %_()"); 
+}
+
+%?{%_(legacy)}{
+%LegacySource()
+}`
+
+%:TheExtensions:
+    std::map<String_, Handle_<%_()_::Extension_> > The_%_()Extensions()
+    {
+        static std::map<String_, Handle_<%_()_::Extension_> > RETVAL;
+        return RETVAL;
+    }
+%:RegisterExtensionAndList:
+void %_()RegisterExtension
+    (const std::vector<String_>& names,
+     const Handle_<%_()_::Extension_>& imp) 
+{
+    REQUIRE(The_%_()List().empty(), "Can't register a new %_() after enumerating all values");
+    assert(!imp.Empty());
+    %_()MustFail(imp->String());
+    for (auto pn = names.begin(); pn != names.end(); ++pn)
+    {
+        %_()MustFail(*pn);    // check this name does not already have a meaning
+        The_%_()Extensions()[String::Condensed(*pn)] = imp;
+    }
+    // check that two-way string conversion works
+    %_() check(imp->String());
+    REQUIRE(check.String() == imp->String(), "Incorrect!  String() representation reconstructs the wrong %_()"); 
+}
+
+std::vector<%_()> %_()ListAll()
+{
+    if (The_%_()List().empty())
+    {
+        std::vector<%_()> retval;
+        std::set<String_> exists;
+        for (auto ii = %_()::E%_()(0); ii < %_()::_EXTENSION; ii = %_()::E%_()(ii + 1))
+        {
+            retval.push_back(%_()(ii));
+            exists.insert(retval.back().String());
+        }
+        auto more = The_%_()Extensions();
+        for (auto pe = more.begin(); pe != more.end(); ++pe)
+        {
+            if (!exists.count(pe->second->String()))
+            {
+                retval.push_back(%_()(pe->second));
+                exists.insert(pe->second->String());
+            }
+        }
+        // store these forever
+        The_%_()List().Swap(&retval);
+    }
+    return The_%_()List();
+}
+%:ListNonExtensible:
+std::vector<%_()> %_()ListAll()
+{
+    if (The_%_()List().empty())
+    {
+        std::vector<%_()> retval;
+        for (auto ii = %_()::E%_()(0); ii < %_()::_N_VALUES; ii = %_()::E%_()(ii + 1))
+        {
+            retval.push_back(%_()(ii));
+        }
+        // store these forever
+        The_%_()List().Swap(&retval);
+    }
+    return The_%_()List();
+}
+%:ConstructDefault:*val = %*[alternative]{%?{%_(default)}{%_(/)_::%_();}}`
+%:ConstructAlternative:
+%*[alias]{	else if (String::Equivalent(src, "%Uppercase()"))
+		*val = %_(/)_::%_(..);
+}`
+%:ConstructExtension:
+    else
+    {
+        // check for extensions
+        auto pe = The_%_()Extensions().find(String::Condensed(src));
+        if (pe != The_%_()Extensions().end())
+        {
+            val_ = _EXTENSION;
+            other_ = pe->second;
+        }
+    }
+
+%:LegacyHeader:
+namespace NBiz
+{
+	class %ExportClass() C%_() : public NCore::CEnumeration  
+	{
+	public:
+		//	CEnumeration data
+		CORE_DECLARE_ENUMERATION_ENUM(C%_()) 
+		{
+%*[alternative]{%?{%*[numeric]{1}}{			%_(../legacy)%_() = %_(numeric),		` emit all numeric values before any others
+}}`
+%?{%MaxNumericSentinel()}{ }` evaluated for side effect (sets counter)
+%*[alternative]{%~{%*[numeric]{1}}{			%_(../legacy)%_() = %#(),
+}}`
+			%_(legacy)Unknown = -1
+		};
+
+		CORE_DECLARE_ENUMERATION(C%_());
+
+		//Serializable Implementation
+		CORE_DECLARE_SERIALIZABLE();
+		// interoperation with %_()_
+		operator %_()_() const;
+		C%_()(const %_()_& src);
+
+%*[method]{		%_()
+}`
+	};
+}	// leave NBiz
+
+%:LegacySource:
+namespace %CatchallNamespace()
+{
+CORE_BEGIN_ENUMERATION_VALUES(C%_())
+%*[alternative]{	CORE_ENUMERATION_VALUE(C%_(..)::%_(../legacy)%_(), "%LegacyShortname()", "%LegacyLongname()");
+}`
+	CORE_ENUMERATION_VALUE(C%_()::%_(legacy)Unknown, "?", "Unknown");
+CORE_END_ENUMERATION_VALUES()
+
+CORE_DEFINE_ENUMERATION(C%_());
+
+
+//Serializable Implementation
+
+CORE_DEFINE_SERIALIZABLE_BEGIN(C%_())
+CORE_SERIALIZABLE_EXPOSE_BASE("BaseClass", CEnumeration)
+CORE_SERIALIZABLE_END()
+
+// interoperation
+C%_()::operator %_()_() const
+{
+	switch (Switch())
+	{
+%*[alternative]{	case %_(../legacy)%_():
+		return %_(..)_::%_();
+}`
+	}
+	// unrecognized, or Unknown
+	return %_()_::_NOT_SET;
+}
+
+C%_()::C%_()(const %_()_& src)
+{
+	SetValue(%_(legacy)Unknown);
+	switch (src.Switch())
+	{
+%*[alternative]{	case %_(..)_::%_():
+		SetValue(%_(../legacy)%_());
+		break;
+}`
+	}
+}
+}	// leave %CatchallNamespace()
+
+
+%:HasDefault:%*[alternative]{%?{%_(default)}{1}}
+%:IsExtensible:%*[extensible]{1}`
+%:LegacyShortname:%?{%_(legacy)}{%_(legacy)}%~{%_(legacy)}{%_()}`
+%:LegacyLongname:%?{%_(longname)}{%_(longname)}%~{%_(longname)}{%LegacyShortname()}`
+`
+%:HtmlHelp:
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<title>%_()</title>
+<link href="tablecloth/tablecloth.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="hbk.css" rel="stylesheet" type="text/css" media="screen" />
+<script type="text/javascript" src="tablecloth/tablecloth.js"></script>
+</head>
+<body>
+<h1>%_() (enumeration)</h1>
+%_(help)
+
+<h2>Allowed values:</h2>
+<table border="1" cellpadding="3">
+<tr><th>Name</th><th style="width:120px">Aliases</th><th></th></tr>
+%*[alternative]{
+<tr><td>%_()%?{%_(default)}{ (default)}</td><td>%*[alias], {%_()}</td><td>%*[help]{%HtmlSafe()}</td></tr>}
+%?{%IsExtensible()}{<tr>Class is run-time extensible, so this list may not be exhaustive</tr>}
+</table>
+}
+

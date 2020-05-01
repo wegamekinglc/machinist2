@@ -1,0 +1,28 @@
+@.\
+<-*.if
+<-*.cpp;*.h;*.hpp!MG_*
+	/*IF
+	-IF
+public
+->MG_#.cpp
+	ExcelSource
+	PythonSource
+->MG_#.h
+	DotNetHeader
+->MG_#.htm
+	HtmlHelp
+settings
+->MG_#.cpp
+	Constructor
+->MG_#.h
+	ClassDef
+storable
+->MG_#_Write.cpp
+	CWrite
+->MG_#_Read.cpp
+	CRead
+dir
+->MG_PublicFunctions#.tex
+	ListPublicTex
+->MG_Settings#.tex
+	ListSettingsTex

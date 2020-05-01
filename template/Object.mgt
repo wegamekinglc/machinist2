@@ -1,0 +1,230 @@
+%:ClassDef:
+#pragma once
+#include "Dictionary.h"
+class UIRow_;
+class Storable_;
+`forward-declare handle members
+%?{%_(is_settings)}{`
+%*[member]{%~{%Extractor()}Handle{class %_(subtype)_;
+}}}`
+
+%?{%_(is_settings)%_(is_record)}{`
+struct %ExportClass() %_()_ %~{%HasHandle()}{: StoreAsDictionary_<%_()_>}
+{`
+	%*[member]{%DataMember()}
+%~{%HasHandle()}{`
+	%_()_(const Dictionary_& src);
+	%_()_(const Dictionary_& src, const std::map<String_, Handle_<Storable_>>&) : %_()_(src) {}
+	Dictionary_ Data() const;
+%?{%_(is_record)}{`
+	static Vector_<String_> VectorLabels();
+	Vector_<Cell_> VectorContents() const;
+}}`
+%?{%HasHandle()}{`
+	%_()_(const Dictionary_& atoms, const std::map<String_, Handle_<Storable_>>& objects);
+}`
+%?{%_(is_record)}{`
+	%_()_() {}
+	%_()_(_ENV, const UIRow_& src);
+	%_()_(%*[member],{%MemberWithType()}) 
+		: 
+	%*[member],{%InitializeMemberInInitList()} 
+	{	} 
+
+	%_()_& operator=(const %_()_ & rhs);
+}`
+};}` end is_settings|is_record
+%:DataMember:
+	%CType() %_()_;`
+%:C++Source:
+%~{%HasHandle()}{%?{%_(is_settings)}{
+%_()_::%_()_(const Dictionary_& src)
+	:`
+%*[member], {%InitializeMember()}
+{`
+%*[condition]{%EnforceCondition()}	
+}
+`
+Dictionary_ %_()_::Data() const
+{
+	Dictionary_ retval;`
+	%*[member]{%InsertMember()}
+	return retval;
+}}` end is_settings
+%?{%_(is_record)}{
+Vector_<String_> %_()_::VectorLabels()
+{
+	static const Vector_<String_> RETVAL({%*[member], {%"()}});
+	return RETVAL;
+}
+
+Vector_<Cell_> %_()_::VectorContents() const
+{
+	Vector_<Cell_> retval;
+%*[member]{	retval.push_back(%Inserter()(%_()_%DotValue()));
+}`
+	return retval;
+}
+}}` end of %~{%HasHandle()}
+%?{%_(is_settings)}{`
+%?{%HasHandle()}{
+%_()_::%_()_(const Dictionary_& atoms, const std::map<String_, Handle_<Storable_>>& handles)
+	:`
+%*[member], {%|{%?{%IsHandle()}{%InitializeHandle()}}{%/src/atoms/<%InitializeMember()>}}
+{`
+%*[condition]{%EnforceCondition()}	
+}
+}}` end of is_settings&HasHandle
+`
+%?{%_(is_record)}{`
+%_()_::%_()_(_ENV, const UIRow_& src)
+	:%#0()`	
+%*[member], {%InitializeMemberFromRow()}
+{`
+%*[condition]{%EnforceCondition()}	
+}
+
+%_()_& %_()_::operator=(const %_()_ & rhs) {
+     %*[member]{%AssignMemberFromRHS()}
+     return *this;
+} 
+}
+`
+%?{%_(is_storable)}{%?{%_(is_record)}{
+void %_()_::Write(Archive::Store_& dst) const
+{
+	%_()%?{%_(version)}{_v%_(version)}::XWrite(dst%*[member]{, %_()_});
+}
+}}` end of is_storable&is_record
+` end of C++Source
+%:InitializeMember:
+%_()_(Dictionary::Extract(src, "%Condensed()", std::ptr_fun(%/ToString/CoerceToString/<%Extractor()>)%SupplyDefault()))`
+%:InitializeHandle:
+%_()_(Dictionary::FindHandle<%_(subtype)_>(handles, "%Condensed()"))`
+%:InitializeMemberFromRow:
+%_()_(src.%RecordExtractor()(%~{%Extractor()}Handle{_env, }%#()%SupplyDefault()))`
+%:AssignMemberFromRHS:
+%_()_ = rhs.%_()_;`
+%:InitializeMemberInInitList:`
+%_()_(%_())`
+%:MemberWithType:`
+%CType() %_()`
+%:EnforceCondition:
+	REQUIRE(%_(), %|{%*[help]{%"()}}{"Validation failed: " %"()});` emit stringified condition if help is not available
+%:InsertMember:
+	%~{%MustExist()}{if (%ExistenceTest())
+		}`
+retval.Insert("%Condensed()", %Inserter()(%_()_%DotValue()));`
+`
+%:JavaRecord:%?{%_(is_record)}{`
+package types
+
+public class %_() 
+{
+%*[member]{	%JType() %_();
+}`
+}
+}`
+%:HasHelp:%*[help]{1}
+`
+` TexHelp section
+`
+%:TexHelp:
+\section{%_()}
+\index{%_()}
+%*[help]{%TexSafe()}.
+{\bf MEMBERS}
+\begin{itemize}
+%*[member]{%TexMemberHelp()}
+\end{itemize}
+%?{%HasConditions()}{{\bf VALIDATION}
+\begin{enumerate}
+%*[condition]{\item{%|{%*[help]{%TexSafe()}}{%TexSafe()}.}}
+\end{enumerate}}
+%:TexMemberHelp:
+\item{\verb!%_()!}{{\small\ (%TypeForHelp()%*[default]{ (default is %TexSafe())})} %*[help]{%TexSafe()}.}
+%:HasConditions:%*[condition]{1}
+%:IsOptional:%*[optional]{1}
+%:IsHandle:%~{%Extractor()}Handle{1}
+%:HasHandle:%*[member]{%IsHandle()}
+
+`
+` HTML Help
+`
+%:HtmlHelp:
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<title>%_()</title>
+<link href="tablecloth/tablecloth.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="hbk.css" rel="stylesheet" type="text/css" media="screen" />
+<script type="text/javascript" src="tablecloth/tablecloth.js"></script>
+</head>
+<body>
+<h1>%_() (settings)</h1>
+%_(help)
+
+<h2>Members:</h2>
+<table border="1" cellpadding="3">
+<tr><th>Name</th><th>Type</th><th>Default Value</th><th></th></tr>
+%*[member]{
+<tr><td>%_()</td><td>%TypeForHelp()</td><td>%*[default]{%HtmlSafe()}</td><td>%_(help)</td></tr>}
+</table>
+`Serialization and deserialization for storables
+%:CWrite:%?{%_(is_storable)}{
+namespace %FullType()
+{
+   void XWrite
+	   (Archive::Store_& dst%*[member]{, const %QuantifiedCType()& %_()})
+   {
+	   using namespace Archive::Utils;
+	   dst.SetType("%FullType()");
+%*[member]{	   %WriteChild()
+}`
+       dst.Done();  
+   }
+}}	` end of CWrite
+%:QuantifiedCType:%?{%_(multiple)}{Vector_<}%CType()%?{%_(multiple)}{>}`
+%:MDominant:%|{%*[multiple]{Multiple}}{%*[optional]{Optional}}`	writes 'Multiple' for any multiple, 'Optional' only for non-multiple optionals
+%:WriteChild:Set%MDominant()(dst, %"(), %_()%?{%IsSettings()}{.Data()}%?{%IsEnum()}{.String()});`
+%:CheckPresence:%?{%_(multiple)}{%~{%_(optional)}{
+			REQUIRE(!%_()_.empty(), "Node '%_()' not found");}}`
+%:GetChild:Get%MDominant()(src, %"(), &%_()_, %CoerceFromView());`
+%CheckPresence()`
+%:FullType:%_()%?{%_(version)}{_v%_(version)}`
+%:BuiltType:%|{%?{%_(manual)}{Storable_}}{%_()_}`
+%:CRead:%?{%_(is_storable)}{
+namespace %FullType()
+{
+	struct Reader_ : Archive::Reader_
+	{
+%*[member]{		%?{%IsSettings()}{Dictionary_}%~{%IsSettings()}{%QuantifiedCType()} %_()_;
+}`
+		Reader_(const Archive::View_& src, Archive::Built_& share)
+		{
+			using namespace Archive::Utils;
+			NOTE("Reading %FullType() from store");
+			assert(src.Type() == "%FullType()");
+%*[member]{       %GetChild()
+}`
+		}
+		%BuiltType()* Build() const%?{%_(manual)}{;	// handwritten}
+%~{%_(manual)}{`
+      {
+         return new %_()_(%*[member], {%_()_});   
+      }
+}`
+		%BuiltType()* Build(const Archive::View_& src, Archive::Built_& share) const
+		{
+			return Reader_(src, share).Build();
+		}
+
+		// constructor-through-registry (safer than default constructor)
+		Reader_(void (*register_func)(const String_&, const Archive::Reader_*))
+		{
+			register_func("%FullType()", this);
+		}
+	};
+	static Reader_ TheData(Archive::Register);
+}}	` end of CRead
+

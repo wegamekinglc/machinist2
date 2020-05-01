@@ -1,0 +1,118 @@
+%:ClassDef:
+#pragma once
+#include "ProBase\Dictionary.h"
+class UIRow_;
+`forward-declare handle members
+%*[member]{%~{%Extractor()}Handle{class %_(subtype)_;
+}}`
+
+struct %ExportClass() %_()_ %~{%HasHandle()}{: StoreAsDictionary_<%_()_>}
+{`
+	%*[member]{%DataMember()}
+%~{%HasHandle()}{	%_()_(const Dictionary_& src);
+	Dictionary_ Data() const;
+}`
+%?{%_(is_record)}{`
+	%_()_(const UIRow_& src);
+	%_()_(%*[member],{%MemberWithType()}) 
+		: 
+	%*[member],{%InitializeMemberInInitList()} 
+	{	} 
+
+	%_()_& %_()_::operator=(const %_()_ & rhs);
+}`
+};
+%:DataMember:
+	%CType() %_()_;`
+%:C++Source:
+%~{%HasHandle()}{
+%_()_::%_()_(const Dictionary_& src)
+	:`
+%*[member], {%InitializeMember()}
+{`
+%*[condition]{%EnforceCondition()}	
+}
+`
+Dictionary_ %_()_::Data() const
+{
+	Dictionary_ retval;`
+	%*[member]{%InsertMember()}
+	return retval;
+}
+}
+
+%?{%_(is_record)}{`
+%_()_::%_()_(const UIRow_& src)
+	:%#0()`	
+%*[member], {%InitializeMemberFromRow()}
+{`
+%*[condition]{%EnforceCondition()}	
+}
+
+%_()_& %_()_::operator=(const %_()_ & rhs) {
+     %*[member]{%AssignMemberFromRHS()}
+     return *this;
+} 
+}
+%:InitializeMember:
+%_()_(Dictionary::Extract(src, "%Condensed()", std::ptr_fun(%Extractor())%SupplyDefault()))`
+%:InitializeMemberFromRow:
+%_()_(src.%RecordExtractor()(%#()%SupplyDefault()))`
+%:AssignMemberFromRHS:
+%_()_ = rhs.%_()_;`
+%:InitializeMemberInInitList:`
+%_()_(%_())`
+%:MemberWithType:`
+%CType() %_()`
+%:EnforceCondition:
+	REQUIRE(%_(), %~{%HasHelp()}{"Validation failed: " %"()}%*[help]{%"()});` emit stringified condition if help is not available
+%:InsertMember:
+	%~{%MustExist()}{if (%ExistenceTest())
+		}`
+retval.Insert("%Condensed()", %Inserter()(%_()_%DotValue()));`
+%:HasHelp:%*[help]{1}
+`
+` TexHelp section
+`
+%:TexHelp:
+\section{%_()}
+\index{%_()}
+%*[help]{%TexSafe()}.
+{\bf MEMBERS}
+\begin{itemize}
+%*[member]{%TexMemberHelp()}
+\end{itemize}
+%?{%HasConditions()}{{\bf VALIDATION}
+\begin{enumerate}
+%*[condition]{\item{%~{%HasHelp()}{%TexSafe()}%*[help]{%TexSafe()}.}}
+\end{enumerate}}
+%:TexMemberHelp:
+\item{\verb!%_()!}{{\small\ (%TypeForHelp()%*[default]{ (default is %TexSafe())})} %*[help]{%TexSafe()}.}
+%:HasConditions:%*[condition]{1}
+%:IsOptional:%*[optional]{1}
+%:HasHandle:%*[member]{%~{%Extractor()}Handle{1}}
+
+`
+` HTML Help
+`
+%:HtmlHelp:
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<title>%_()</title>
+<link href="tablecloth/tablecloth.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="hbk.css" rel="stylesheet" type="text/css" media="screen" />
+<script type="text/javascript" src="tablecloth/tablecloth.js"></script>
+</head>
+<body>
+<h1>%_() (settings)</h1>
+%_(help)
+
+<h2>Members:</h2>
+<table border="1" cellpadding="3">
+<tr><th>Name</th><th>Type</th><th>Default Value</th><th></th></tr>
+%*[member]{
+<tr><td>%_()</td><td>%TypeForHelp()</td><td>%*[default]{%HtmlSafe()}</td><td>%_(help)</td></tr>}
+</table>
+
+

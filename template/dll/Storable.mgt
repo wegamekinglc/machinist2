@@ -1,0 +1,48 @@
+%:CWrite:
+void XSave_%_()_v%_(version)
+	(Archive::Store_& dst%*[member]{, const %QuantifiedCType()& %_()})
+{
+	using namespace Archive::Utils;
+	dst.SetType("%FullType()");
+%*[member]{	%WriteChild()
+}
+}
+
+%:QuantifiedCType:%?{%_(multiple)}{Vector_<}%CType()%?{%_(multiple)}{>}`
+%:MDominant:%?{%_(multiple)}{Multiple}%~{%_(multiple)}{%?{%_(optional)}{Optional}}`	writes 'Multiple' for any multiple, 'Optional' only for non-multiple optionals
+%:WriteChild:Set%MDominant()(dst, %"(), %_());`
+%:CheckPresence:%?{%_(multiple)}{%~{%_(optional)}{
+			REQUIRE(!%_()_.empty(), "Node '%_()' not found");}}`
+%:GetChild:Get%MDominant()(src, %"(), &%_()_, %CoerceFromView());`
+%CheckPresence()`
+%:FullType:%_()%?{%_(version)}{_v%_(version)}`
+%:CRead:
+namespace %FullType()
+{
+	struct Data_ : Archive::Data_
+	{
+		%*[member]{%?{%IsSettings()}{Dictionary_}%~{%IsSettings()}{%QuantifiedCType()} %_()_;
+		}
+		Data_(const Archive::View_& src, Archive::Built_& share)
+		{
+			using namespace Archive::Utils;
+			NOTE("Reading %FullType() from store");
+			assert(src.Type() == "%FullType()");
+			%*[member]{%GetChild()
+			}
+		}
+		%_()_* Build() const;	// handwritten
+		Handle_<Storable_> Build(const Archive::View_& src, Archive::Built_& share) const
+		{
+			return Data_(src, share).Build();
+		}
+
+		// constructor-through-registry (safer than default constructor)
+		Data_(void (*register_func)(const String_&, const Archive::Data_*))
+		{
+			register_func("%FullType()", this);
+		}
+	};
+	static Data_ TheData(Archive::Register);
+}
+

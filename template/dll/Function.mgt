@@ -1,0 +1,36 @@
+%:ExcelSource:
+xloper* __stdcall xl_%_()
+	(%*[input],{const xloper* xl_%_()})
+{
+	const char* argName = 0;
+	try
+	{
+		%*[input]{%ExcelTranslateInput()}
+		argName = 0;
+		%*[output]{%ExcelDeclareOutput()}
+		%_()(%*[input],{%_()}%?{%HasChild()}{,}%*[output],{&%_()});
+		Excel::Retval_ retval;
+		%*[output]{retval.Load(%_());}
+		return retval.ToXloper();
+	}
+	catch (exception& e)
+	{
+		return Excel::Error(e.what(), argName);
+	}
+}
+
+struct Register_%_()_
+{
+	Register_%_()_()
+	{
+		TheFunctions().push_back(XLFunc_("xl_%_()", "%ExcelArgTypes()", "%ExcelName()", "%ExcelArgNames()", vector<string>()));
+	}
+}
+
+%:ExcelTranslateInput:
+		argName = "%_()";
+		const vector<double> %_() = Excel::ToVector(xl_%_());
+%:ExcelDeclareOutput:
+		vector<double> %_();
+%:ExcelArgTypes:P%*[input]{P}`	everything is a P-type
+%:ExcelArgNames:%*[input], {%_()}

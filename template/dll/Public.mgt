@@ -1,0 +1,295 @@
+%:ExcelSource:
+%~{%_(suppress/excel)}{
+extern "C" __declspec(dllexport) OPER_* xl_%_()
+	(%*[input], {const OPER_* xl_%_()}%?{%MultipleOutputs()}{, const OPER_* format})	`this will break if a function has multiple outputs and no inputs, O well
+
+{
+	Excel::InitializeSessionIfNeeded();
+	const char* argName = 0;
+	try
+	{%#0()%?{%#()}{}	`start counting args from 1
+		
+		Log::Write(%"());`
+		%*[input]{%ExcelTranslateInput()}
+		argName = 0;`
+		%*[condition]{%EnforceCondition()}
+		%*[output]{%DeclareOutput()}
+		%_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {&%_()});
+		Excel::Retval_ retval;
+		%*[output]{retval.Load(%_());
+		}` this is the close brace for the loop over outputs, doesn't show up in the generated code
+return retval.ToXloper(%?{%MultipleOutputs()}{Excel::ToString(format, true)});
+	}
+	catch (std::exception& e)
+	{
+		return Excel::Error(e.what(), argName);
+	}
+	catch (...)
+	{
+		return Excel::Error("Unknown error", argName);
+	}
+}
+
+struct XlRegister_%_()_
+{
+	XlRegister_%_()_()
+	{
+		Vector_<String_> argHelp;`
+		%*[input]{%AddArgHelp()}
+		Excel::Register("%DLLBaseName()", "xl_%_()", "%ExcelName()", %*[help]{%"()}, "%ExcelArgTypes()", "%ExcelArgNames()", argHelp, %IsVolatile()%*[category]{, %"()});
+	}
+};
+static XlRegister_%_()_ The_%_()_XlRegisterer;
+}` endif not suppress/excel
+%:ExcelTranslateInput:
+		argName = "%_() (input #%#())";
+		const %CType() %_(myname) = Excel::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(xl_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%_())};`
+%*[insert]{
+		%_()}`
+%:DeclareOutput:
+		%CType() %_();`
+%:DeclareOutputMember:
+		%CType() %_()_;`
+%:ExcelArgTypes:Q%*[input]{Q}%?{%MultipleOutputs()}{Q}%~{%_()}^Repository{!}`	everything is a Q-type (XLOPER12); Repository functions are volatile
+%:ExcelArgNames:%*[input],{%?{%_(optional)}{[}%_()%?{%_(optional)}{]}}%?{%MultipleOutputs()}{,format}`
+%:HasAnInput:%*[input]{1}
+%:IsOptional:%*[optional]{1}
+%:HasHelp:%*[help]{1}
+%:AddArgHelp:
+		argHelp.push_back(%*[help]{%"()});`
+%:EnforceCondition:
+		REQUIRE(%_(), %~{%HasHelp()}{"Validation failed: " %"()}%*[help]{%"()});` emit stringified condition if help is not available
+%:IsVolatile:%?{%_(volatile)}{true}%~{%_(volatile)}{false}`
+`
+`
+%:PythonSource:
+%~{%_(suppress/python)}{
+extern "C" __declspec(dllexport) PyObject* py_%_()(PyObject* self, PyObject* positional, PyObject* named)
+{
+	const char* argName = 0;
+	try
+	{
+		Log::Write(%"());
+		scoped_ptr<Python::ArgReader_> pyReader(Python::NewArgReader(positional, named));	// will vend args in sequence
+		%*[input]{%PythonTranslateInput()}
+		argName = 0;`
+		%*[condition]{%EnforceCondition()}
+		%*[output]{%DeclareOutput()}
+		%_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {&%_()});
+		scoped_ptr<Python::Retval_> retval(Python::NewRetval());
+		%*[output]{retval->Append(%_());
+		}` this is the close brace for the loop over outputs, doesn't show up in the generated code
+return retval->Release();
+	}
+	catch (std::exception& e)
+	{
+		return Python::Error(e.what(), argName);
+	}
+	catch (...)
+	{
+		return Python::Error("Unknown error", argName);
+	}
+}
+
+struct PyRegister_%_()_
+{
+	PyRegister_%_()_()
+	{
+		Vector_<String_> argHelp;`
+		%*[input]{%AddArgHelp()}
+		Python::Register(py_%_(), "%PythonName()", %*[help]{%"()}, "%ExcelArgNames()", argHelp);
+	}
+};
+static PyRegister_%_()_ The_%_()_PyRegisterer;
+}` endif not suppress/python
+%:PythonTranslateInput:
+		argName = "%_()";
+		const %CType() %_(myname) = Python::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(pyReader->Next(argName)%*[intype]{, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%_())};`
+%*[insert]{
+		%_()}`
+`
+`
+
+%:CppSource:
+#include "MG_%_()_Direct.h"
+
+namespace
+{
+	void %_()_Checked
+		(%*[input], 
+		 {const %CType()& %_(myname)}%?{%HasAnInput()}{, 
+}`
+		 %*[output],
+		 {%CppOutType() %_()})
+	{`
+%*[input]{%*[insert]{
+		%_()}}`
+		%*[condition]{%EnforceCondition()}
+		%_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {%_()});
+	}
+}	// leave local
+
+%ExportFunc() ProDirect::%CppName()_Out_ ProDirect::%CppName()
+	(%*[input], 
+	 {%CppInType() %_()})
+{
+	// Excel::InitializeSessionIfNeeded();	-- presently assuming C++ users do this for themselves
+	try
+	{
+		%CppName()_Out_ retval;
+		%_()_Checked(%*[input], {%CppPassArg()}%?{%HasAnInput()}{, }%*[output], {%~{%_(type)}handle{%?{%_(subtype)}{ReceiveHandle_<%_(subtype)_>(}}&retval.%_()_%~{%_(type)}handle{%?{%_(subtype)}{)}}});
+		return retval;
+	}
+	catch (std::exception&)
+	{
+		throw;
+	}
+	catch (...)
+	{
+		throw ProBase::Exception_("Unknown error");
+	}
+}
+
+%:CppHeader:
+namespace ProDirect
+{
+	struct %CppName()_Out_
+	{
+%*[output]{		%CBaseType() %_()_;
+}`
+	};
+
+	%ExportFunc() %CppName()_Out_ %CppName()
+		(%*[input],
+		 {%CppInType() %_()%*[default]{ = %_()}%?{%_(optional)}{%~{%*[default]{_}}{ = 0}}}`
+);
+}
+`
+%:DotNetDeclareInput:`
+%DotNetType() dn_%_()`
+%:DotNetDeclareOutput:
+		%DotNetType() %_()_;
+%:DotNetTranslateInput:
+		argName = "%_()";
+		const %CType() %_() = DotNet::%CTypeTranslator()(dn_%_()%?{%IsOptional()}{, true});`
+%:DotNetSource:
+%~{%_(suppress/dotnet)}{
+#pragma managed
+#include "MG_%_().h"
+
+TALibNet::%_()_Return_^ TALibNet::%_()_::Run
+	(%*[input], {%DotNetDeclareInput()})
+{
+	%_()_Return_^ retval = gcnew %_()_Return_;
+	const char* argName = 0;
+	try
+	{`
+		%*[input]{%DotNetTranslateInput()}
+		argName = 0;`
+		%*[condition]{%EnforceCondition()}
+		%*[output]{%DeclareOutput()}
+		::%_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {&%_()});
+		%*[output]{retval->%_()_ = DotNet::CopyOut(%_());
+		}
+		return retval;
+	}
+	catch (std::exception& e)
+	{
+		retval->error_ = DotNet::Error(e.what(), argName);
+		return retval;
+	}
+}
+}
+%:DotNetHeader:
+%~{%_(suppress/dotnet)}{
+
+namespace TALibNet
+{
+	public ref struct %_()_Return_
+	{
+		System::String^ error_;`
+		%*[output]{%DotNetDeclareOutput()}`
+	};
+
+	public ref class %_()_
+	{
+	public:
+		static initonly %_()_^ Instance = gcnew %_()_;
+		%_()_Return_^ Run(%*[input], {%DotNetDeclareInput()});
+	};
+}
+}
+
+`
+` TexHelp section
+`
+%:TexHelp:
+\section{%ExcelName()}
+\index{%ExcelName()}
+%*[help]{%TexSafe()}.
+%?{%HasAnInput()}{
+{\bf INPUTS}
+\begin{itemize}
+%*[input]{%TexArgHelp()}
+\end{itemize}
+%?{%HasConditions()}{{\bf VALIDATION}
+\begin{enumerate}
+%*[condition]{\item{%~{%HasHelp()}{%TexSafe()}%*[help]{%TexSafe()}.}
+}
+\end{enumerate}}}
+{\bf OUTPUTS}
+\begin{itemize}
+%*[output]{%TexArgHelp()}
+\end{itemize}
+
+%:TexArgHelp:
+\item{\verb!%_()!}{{\small\ (%TypeForHelp()%*[optional]{ (Optional)})} %*[help]{%TexSafe()}.}
+%:HasConditions:%*[condition]{1}
+
+
+%:HtmlHelp:
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<title>%_()</title>
+<link href="tablecloth/tablecloth.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="hbk.css" rel="stylesheet" type="text/css" media="screen" />
+<script type="text/javascript" src="tablecloth/tablecloth.js"></script>
+</head>
+<body>
+<h1>%_() (in Excel: %ExcelName())</h1>
+%_(help)
+
+%?{%HasAnInput()}{<h2>Inputs:</h2>
+<table border="1" cellpadding="3">
+<tr><th>Name</th><th style="width:120px">Type</th><th>Optional?</th><th></th></tr>
+%*[input]{
+<tr><td>%_()</td><td>%TypeForHelp()</td><td>%?{%IsOptional()}{yes%*[default]{ (default = %HtmlSafe())}}</td><td>%*[help]{%HtmlSafe()}</td></tr>}
+%?{%MultipleOutputs()}{<tr><td>format</td><td>string</td><td>yes</td><td>(Excel only) Desired screen layout of outputs; see <a href="MG_Format_public.htm">QR.FORMAT</a>.</td></tr>}
+</table>
+}
+
+%?{%HasConditions()}{<h2>Conditions:</h2>
+<table border="1" cellpadding="3">
+%*[condition]{
+<tr><td>%~{%HasHelp()}{%HtmlSafe()}%*[help]{%HtmlSafe()}</td></tr>}
+</table>
+}
+
+
+<h2>Outputs:</h2>
+<table border="1" cellpadding="3">
+<tr><th>Name</th><th style="width:120px">Type</th><th></th></tr>
+%*[output]{
+<tr><td>%_()</td><td>%TypeForHelp()</td><td>%*[help]{%HtmlSafe()}</td></tr>}
+</table>
+
+%*[notes]{<h2>Notes:</h2> %HtmlSafe()}
+
+%?{%*[link]{1}}{<h2>See also:</h2>}
+%*[link]{%Link()}
+
+%:Link:
+<a href="MG_%_()_%?{%_(type)}{%_(type)}%~{%_(type)}{public}.htm">%_()</a><br>
+
+</body></html>
