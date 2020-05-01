@@ -4,7 +4,7 @@
 #include <direct.h>
 #include <iostream>
 #include <fstream>
-#include <assert.h>
+#include <cassert>
 #include <numeric>
 #include "Config.h"
 #include "Emitter.h"
