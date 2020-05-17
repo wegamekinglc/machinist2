@@ -1,7 +1,12 @@
  // Machinist.cpp : Defines the entry point for the console application.
 //
 #include "handle.hpp"
-#include <direct.h>
+#ifdef _WIN32
+    #include <direct.h>
+    #define getcwd _getcwd // stupid MSFT "deprecation" warning
+#else
+    #include <unistd.h>
+#endif
 #include <iostream>
 #include <fstream>
 #include <cassert>
@@ -49,7 +54,7 @@ namespace
 					break;
 
 				default:
-					throw std::exception("Unrecognized command line switch");
+					throw std::runtime_error("Unrecognized command line switch");
 				}
 			}
 			else
@@ -239,7 +244,7 @@ namespace
 void XMain(int argc, char* argv[])
 {
 	char buf[2048];
-	_getcwd(buf, 2048);
+	getcwd(buf, 2048);
 	cout << "In directory " << buf << "\n";
 
 	string configFile;
