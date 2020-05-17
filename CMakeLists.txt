@@ -26,4 +26,11 @@ else()
     set(CMAKE_CXX_STANDARD 14)
 endif()
 
+if(NOT MSVC)
+    find_package(Boost)
+    if (Boost_FOUND)
+        include_directories(${Boost_INCLUDE_DIRS})
+    endif (Boost_FOUND)
+endif()
+
 add_subdirectory(machinist)

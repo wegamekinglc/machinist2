@@ -1,9 +1,9 @@
  
-#include "Template.h"
+#include "template.hpp"
 #include <assert.h>
-#include "Emitter.h"
-#include "Info.h"
-#include "ParseUtils.h"
+#include "emitter.hpp"
+#include "info.hpp"
+#include "parseutils.hpp"
 #include <algorithm>
 #include <numeric>
 #include <iostream>

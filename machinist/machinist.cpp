@@ -1,15 +1,15 @@
  // Machinist.cpp : Defines the entry point for the console application.
 //
-#include "Handle.h"
+#include "handle.hpp"
 #include <direct.h>
 #include <iostream>
 #include <fstream>
 #include <cassert>
 #include <numeric>
-#include "Config.h"
-#include "Emitter.h"
-#include "Info.h"
-#include "File.h"
+#include "config.hpp"
+#include "emitter.hpp"
+#include "info.hpp"
+#include "file.hpp"
 
 using std::pair;
 using std::cout;

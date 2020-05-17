@@ -1,7 +1,7 @@
  
-#include "ParseUtils.h"
-#include "Info.h"
-#include "Emitter.h"
+#include "parseutils.hpp"
+#include "info.hpp"
+#include "emitter.hpp"
 #include <assert.h>
 
 bool ParseUtils::IsWhite(char c)

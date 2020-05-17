@@ -1,10 +1,16 @@
  
-#include "File.h"
+#include "file.hpp"
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <istream>
-#include <windows.h>
+
+#if defined(_MSC_VER)
+    #include <windows.h>
+#else
+    #include <boost/filesystem.hpp>
+    #include <boost/regex.hpp>
+#endif
 
 void File::Read
 	(const string& filename,
@@ -88,27 +94,56 @@ string File::PathOnly(const string& filename)
 }
 
 
-vector<string> File::List
-	(const string& dir,
-	 const string& pattern,
-	 const vector<string>& reject_patterns)
-{
-	WIN32_FIND_DATAA found;
-	HANDLE hfind = FindFirstFileA((Path(dir) + pattern).c_str(), &found);
-	vector<string> retval;
-	while (hfind != INVALID_HANDLE_VALUE)
-	{
-		bool reject = false;
-		for (auto pr = reject_patterns.begin(); pr != reject_patterns.end() && !reject; ++pr)
-			reject = wildcmp(pr->c_str(), found.cFileName);
-		if (!reject)
-			retval.push_back(string(found.cFileName));
-		if (!FindNextFileA(hfind, &found))
-			break;
-	}
-	FindClose(hfind);
-	return retval;
-}
+#if defined(_MSC_VER)
+    vector<string> File::List
+        (const string& dir,
+         const string& pattern,
+         const vector<string>& reject_patterns)
+    {
+        WIN32_FIND_DATAA found;
+        HANDLE hfind = FindFirstFileA((Path(dir) + pattern).c_str(), &found);
+        vector<string> retval;
+        while (hfind != INVALID_HANDLE_VALUE)
+        {
+            bool reject = false;
+            for (auto pr = reject_patterns.begin(); pr != reject_patterns.end() && !reject; ++pr)
+                reject = wildcmp(pr->c_str(), found.cFileName);
+            if (!reject)
+                retval.push_back(string(found.cFileName));
+            if (!FindNextFileA(hfind, &found))
+                break;
+        }
+        FindClose(hfind);
+        return retval;
+    }
+#else
+    namespace fs = boost::filesystem;
+    vector<string> File::List
+            (const string& dir,
+             const string& pattern,
+             const vector<string>& reject_patterns)
+    {
+        fs::recursive_directory_iterator it(dir);
+        fs::recursive_directory_iterator endit;
+        vector<string> retval;
+        const boost::regex filter(pattern);
+        while(it != endit)
+        {
+            bool reject = false;
+            boost::smatch what;
+            string file_name = it->path().filename().string();
+            if(boost::regex_match(file_name, what, filter)) {
+                for (auto pr = reject_patterns.begin(); pr != reject_patterns.end() && !reject; ++pr)
+                    reject = wildcmp(pr->c_str(), file_name.c_str());
+                if (!reject)
+                    retval.push_back(file_name);
+            }
+            ++it;
+        }
+        return retval;
+    }
+
+#endif
 
 string File::InfoType(const string& filename)
 {

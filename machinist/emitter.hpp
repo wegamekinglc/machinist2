@@ -3,7 +3,7 @@
 #define MACHINIST_EMITTER__
 
 #ifndef MACHINIST_HANDLE__
-#include "Handle.h"
+#include "handle.hpp"
 #endif
 
 #include <string>

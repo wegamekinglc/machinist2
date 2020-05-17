@@ -1,6 +1,6 @@
  
-#include "Emitter.h"
-#include "Info.h"
+#include "emitter.hpp"
+#include "info.hpp"
 #include <algorithm>
 #include <iostream>
 #include <regex>

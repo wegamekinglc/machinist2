@@ -2,11 +2,11 @@
 // parse settings mark-up, emit results
 
 // this machinist file has no associated header
-#include "Info.h"
-#include "Template.h"
-#include "Emitter.h"
-#include "ParseUtils.h"
-#include "File.h"
+#include "info.hpp"
+#include "template.hpp"
+#include "emitter.hpp"
+#include "parseutils.hpp"
+#include "file.hpp"
 
 using namespace ParseUtils;
 using std::pair;

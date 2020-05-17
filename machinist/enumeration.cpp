@@ -2,13 +2,13 @@
 // parse enumeration mark-up, emit results
 
 // this machinist file has no associated header
-#include "Info.h"
+#include "info.hpp"
 #include <algorithm>
 #include <iostream>
-#include "Template.h"
-#include "Emitter.h"
-#include "ParseUtils.h"
-#include "File.h"
+#include "template.hpp"
+#include "emitter.hpp"
+#include "parseutils.hpp"
+#include "file.hpp"
 using namespace ParseUtils;
 using Info::MakeLeaf;
 

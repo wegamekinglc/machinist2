@@ -3,11 +3,11 @@
 #define MACHINIST_CONFIG__
 
 #ifndef MACHINIST_HANDLE__
-#include "Handle.h"
+#include "handle.hpp"
 #endif
 
 #ifndef MACHINIST_EMITTER__
-#include "Emitter.h"
+#include "emitter.hpp"
 #endif
 
 #include <map>

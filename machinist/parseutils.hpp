@@ -3,7 +3,7 @@
 #define MACHINIST_PARSEUTILS__
 
 #ifndef MACHINIST_HANDLE__
-#include "Handle.h"
+#include "handle.hpp"
 #endif
 
 using std::auto_ptr;

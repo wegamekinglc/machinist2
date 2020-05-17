@@ -2,13 +2,13 @@
 // parse public mark-up, emit results
 
 // this machinist file has no associated header
-#include "Info.h"
+#include "info.hpp"
 #include <iostream>
 #include <algorithm>
-#include "Template.h"
-#include "Emitter.h"
-#include "ParseUtils.h"
-#include "File.h"
+#include "template.hpp"
+#include "emitter.hpp"
+#include "parseutils.hpp"
+#include "file.hpp"
 
 using namespace ParseUtils;
 using std::pair;
