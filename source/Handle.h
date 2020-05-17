@@ -12,8 +12,8 @@ using std::vector;
 using std::string;
 using std::shared_ptr;
 
-#define REQUIRE(cond, msg) if (cond); else throw std::exception(string(msg).c_str());
-#define THROW(msg) throw std::exception(string(msg).c_str());
+#define REQUIRE(cond, msg) if (cond); else throw std::runtime_error(string(msg).c_str());
+#define THROW(msg) throw std::runtime_error(string(msg).c_str());
 template<class T_> T_ Next(const T_& p) { return p + 1; }
 template<class T_> const T_& Max(const T_& a, const T_& b) { return a > b ? a : b; }
 template<class T_> const T_& Min(const T_& a, const T_& b) { return a < b ? a : b; }
