@@ -1,6 +1,6 @@
  // Machinist.cpp : Defines the entry point for the console application.
 //
-#include "handle.hpp"
+#include "../machinist/handle.hpp"
 #ifdef _WIN32
     #include <direct.h>
     #define getcwd _getcwd // stupid MSFT "deprecation" warning
@@ -11,10 +11,10 @@
 #include <fstream>
 #include <cassert>
 #include <numeric>
-#include "config.hpp"
-#include "emitter.hpp"
-#include "info.hpp"
-#include "file.hpp"
+#include "../machinist/config.hpp"
+#include "../machinist/emitter.hpp"
+#include "../machinist/info.hpp"
+#include "../machinist/file.hpp"
 
 using std::pair;
 using std::cout;

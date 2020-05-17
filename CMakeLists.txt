@@ -34,3 +34,4 @@ if(NOT MSVC)
 endif()
 
 add_subdirectory(machinist)
+add_subdirectory(cli)
