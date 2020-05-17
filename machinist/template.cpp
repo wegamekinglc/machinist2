@@ -457,7 +457,8 @@ namespace
 		{
 			if (bs)	// just saw a backslash
 			{
-				if (*ps == '"' || *ps == '\\')	// it's already a \" or \\, we need to write \\"" or \\\\ 
+                // it's already a \" or \\, we need to write \\"" or \\\\;
+				if (*ps == '"' || *ps == '\\')
 				{
 					retval.push_back('\\');
 					retval.push_back('\\');
