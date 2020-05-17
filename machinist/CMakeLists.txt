@@ -1,6 +1,6 @@
 file(GLOB_RECURSE MACHINIST_FILES "*.hpp" "*.cpp")
-list(FILTER MACHINIST_FILES EXCLUDE REGEX ".*Pattern.cpp$")
-list(FILTER MACHINIST_FILES EXCLUDE REGEX ".*Storable.cpp$")
+list(FILTER MACHINIST_FILES EXCLUDE REGEX ".*pattern.cpp$")
+list(FILTER MACHINIST_FILES EXCLUDE REGEX ".*storable.cpp$")
 add_executable(Machinist ${MACHINIST_FILES})
 
 install(TARGETS Machinist
