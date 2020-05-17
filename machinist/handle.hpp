@@ -3,7 +3,7 @@
 #define MACHINIST_HANDLE__
 
 // sort of using this as a platform file
-#include <exception>
+#include <stdexcept>
 #include <memory>
 #include <string>
 #include <vector>
