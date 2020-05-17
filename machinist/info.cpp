@@ -51,7 +51,7 @@ child2:child2_ownval
 		(const Info_* parent,
 		 const Info_* root,
 		 const string& info_name,
-		 vector<string>::const_iterator& line,
+		 vector<string>::const_iterator line,
 		 vector<string>::const_iterator end,
 		 int tab_offset)
 	{
@@ -80,7 +80,7 @@ child2:child2_ownval
 				return 0;
 	// if any line does not contain a colon, then this function returns NULL and we can try some other parser
 	// if every line contains a colon, we will try to parse, and throw an exception on failure
-		return XParseRaw(0, 0, info_name, content.begin(), content.end(), 0);
+		return XParseRaw(nullptr, nullptr, info_name, content.begin(), content.end(), 0);
 	}
 
 	void CheckBackPointers
