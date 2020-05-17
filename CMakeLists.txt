@@ -26,4 +26,4 @@ else()
     set(CMAKE_CXX_STANDARD 14)
 endif()
 
-add_subdirectory(source)
+add_subdirectory(machinist)

@@ -25,7 +25,7 @@ namespace
 		return c == '/' || c == '\\';
 	}
 
-	// open source globbing function, lightly edited
+	// open machinist globbing function, lightly edited
 	bool wildcmp(const char *wild, const char *string)
 	{
 		// Written by Jack Handy - <A href="mailto:jakkhandy@hotmail.com">jakkhandy@hotmail.com</A>

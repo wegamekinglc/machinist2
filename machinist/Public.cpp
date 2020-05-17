@@ -1,7 +1,7 @@
  
 // parse public mark-up, emit results
 
-// this source file has no associated header
+// this machinist file has no associated header
 #include "Info.h"
 #include <iostream>
 #include <algorithm>
