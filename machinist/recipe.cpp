@@ -58,7 +58,7 @@ namespace
 	string StandardMeasure(const string& src)
 	{
 		string retval(src);
-		transform(retval.begin(), retval.end(), retval.begin(), tolower);
+		transform(retval.begin(), retval.end(), retval.begin(), [](const unsigned char c){ return tolower(c); });
 		if (StartsWith(retval, "tbsp") || StartsWith(retval, "tablespoon"))
 			return "Tbsp";
 		if (StartsWith(retval, "tsp") || StartsWith(retval, "teaspoon"))
