@@ -22,7 +22,7 @@ in examples indicate newline and tab, not literal escape sequences.
 
 ## Platforms
 
-Machinist uses the Windows API to read and write files; it will not run on any other OS.
+~Machinist uses the Windows API to read and write files; it will not run on any other OS.~
 
 
 ## The Command Line
