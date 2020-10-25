@@ -208,7 +208,7 @@ namespace
 		cout << "Scanning " << filename.c_str() << "\n";
 		cout.flush();
 		vector<string> content;
-		File::Read(path + filename, &content);
+		File::Read(filename, &content);
 		*n_lines += content.size();
 		for (auto pl = content.begin(); pl != content.end(); ++pl)
 		{
