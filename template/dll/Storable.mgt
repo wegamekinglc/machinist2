@@ -19,30 +19,30 @@ void XSave_%_()_v%_(version)
 %:CRead:
 namespace %FullType()
 {
-	struct Data_ : Archive::Data_
-	{
-		%*[member]{%?{%IsSettings()}{Dictionary_}%~{%IsSettings()}{%QuantifiedCType()} %_()_;
-		}
-		Data_(const Archive::View_& src, Archive::Built_& share)
-		{
-			using namespace Archive::Utils;
-			NOTE("Reading %FullType() from store");
-			assert(src.Type() == "%FullType()");
-			%*[member]{%GetChild()
-			}
-		}
-		%_()_* Build() const;	// handwritten
-		Handle_<Storable_> Build(const Archive::View_& src, Archive::Built_& share) const
-		{
-			return Data_(src, share).Build();
-		}
+    struct Data_ : Archive::Data_
+    {
+        %*[member]{%?{%IsSettings()}{Dictionary_}%~{%IsSettings()}{%QuantifiedCType()} %_()_;
+        }
+        Data_(const Archive::View_& src, Archive::Built_& share)
+        {
+            using namespace Archive::Utils;
+            NOTE("Reading %FullType() from store");
+            assert(src.Type() == "%FullType()");
+            %*[member]{%GetChild()
+            }
+        }
+        %_()_* Build() const;	// handwritten
+        Handle_<Storable_> Build(const Archive::View_& src, Archive::Built_& share) const
+        {
+            return Data_(src, share).Build();
+        }
 
-		// constructor-through-registry (safer than default constructor)
-		Data_(void (*register_func)(const String_&, const Archive::Data_*))
-		{
-			register_func("%FullType()", this);
-		}
-	};
-	static Data_ TheData(Archive::Register);
+        // constructor-through-registry (safer than default constructor)
+        Data_(void (*register_func)(const String_&, const Archive::Data_*))
+        {
+            register_func("%FullType()", this);
+        }
+    };
+    static Data_ TheData(Archive::Register);
 }
 
