@@ -1,6 +1,21 @@
 # User guide to Machinist
 
-* Tom Hyer
+<table>
+<tr>
+  <td>Build Status</td>
+  <td>
+    <a href="https://travis-ci.org/alpha-miner/Finance-Python">
+    <img src="https://travis-ci.org/wegamekinglc/machinist2.svg?branch=master" alt="travis build status" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Coverage</td>
+  <td><img src="https://coveralls.io/repos/wegamekinglc/machinist2/badge.svg?branch=master&service=github" alt="coverage" /></td>
+</tr>
+</table>
+
+* Tom Hyer, Cheng Li
 * 5 March 2015
 
 ## Overview of Execution
