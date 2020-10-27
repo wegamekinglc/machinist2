@@ -30,7 +30,7 @@ find_package(Boost)
 if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     if(MSVC)
-        link_directories(D:/dev/boost_1_74_0/lib32-msvc-14.1)
+        link_directories(D:/dev/boost_1_74_0/lib64-msvc-14.2)
     endif()
 endif (Boost_FOUND)
 
