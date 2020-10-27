@@ -3,8 +3,10 @@ list(FILTER MACHINIST_FILES EXCLUDE REGEX ".*pattern.cpp$")
 list(FILTER MACHINIST_FILES EXCLUDE REGEX ".*storable.cpp$")
 add_executable(Machinist machinist.cpp ${MACHINIST_FILES})
 
-#find_package (Boost COMPONENTS filesystem regex REQUIRED)
-#target_link_libraries (Machinist ${Boost_LIBRARIES})
+if(NOT MSVC)
+    find_package (Boost COMPONENTS filesystem regex REQUIRED)
+    target_link_libraries (Machinist ${Boost_LIBRARIES})
+endif()
 
 install(TARGETS Machinist
         RUNTIME DESTINATION bin
