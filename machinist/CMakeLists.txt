@@ -4,11 +4,6 @@ list(FILTER MACHINIST_FILES EXCLUDE REGEX ".*storable.cpp$")
 
 add_library(machinistlib STATIC ${MACHINIST_FILES})
 
-if(NOT MSVC)
-    find_package (Boost COMPONENTS filesystem regex REQUIRED)
-    target_link_libraries (machinistlib ${Boost_LIBRARIES})
-endif()
-
 install(DIRECTORY . DESTINATION include/machinist
         FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
 

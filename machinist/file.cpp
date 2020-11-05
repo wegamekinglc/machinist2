@@ -4,9 +4,9 @@
 #include <iostream>
 #include <istream>
 #include <string>
+#include <regex>
+#include <filesystem>
 
-#include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
 
 void File::Read(const string& filename, vector<string>* dst) {
     std::ifstream src(filename);
@@ -35,27 +35,27 @@ string File::PathOnly(const string& filename) {
     return retval;
 }
 
-namespace fs = boost::filesystem;
+namespace fs = std::experimental::filesystem;
 vector<string> File::List(const string& dir, const string& pattern, const vector<string>& reject_patterns) {
     fs::recursive_directory_iterator it(dir);
     fs::recursive_directory_iterator endit;
-    vector<string> retval;
-    const boost::regex filter(pattern);
+    vector<string> ret_val;
+    const std::regex filter(pattern);
     while (it != endit) {
         bool reject = false;
-        boost::smatch what;
+        std::smatch what;
         string file_name = it->path().filename().string();
-        if (boost::regex_match(file_name, what, filter)) {
+        if (std::regex_match(file_name, what, filter)) {
             for (auto pr = reject_patterns.begin(); pr != reject_patterns.end() && !reject; ++pr) {
-                const boost::regex reject_pattern(*pr);
-                reject = boost::regex_match(file_name, what, reject_pattern);
+                const std::regex reject_pattern(*pr);
+                reject = std::regex_match(file_name, what, reject_pattern);
             }
             if (!reject)
-                retval.push_back(it->path().string());
+                ret_val.push_back(it->path().string());
         }
         ++it;
     }
-    return retval;
+    return ret_val;
 }
 
 string File::InfoType(const string& filename) {
