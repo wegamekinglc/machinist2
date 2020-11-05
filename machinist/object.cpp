@@ -60,8 +60,8 @@ namespace {
                      const string& subtype,
                      const string& from_func,
                      const string& default_val,
-                     auto_ptr<Info_>* help) {
-        auto_ptr<Info_> retval(new Info_(parent, parent, name));
+                     unique_ptr<Info_>* help) {
+        unique_ptr<Info_> retval(new Info_(parent, parent, name));
         retval->children_.insert(make_pair(TYPE, Info::MakeLeaf(retval.get(), retval->root_, type)));
         if (dim > 0)
             retval->children_.insert(
@@ -143,7 +143,7 @@ namespace {
                                    ? string() // one of the optional things started at the start of rest
                                    : UntilWhite(rest);
 
-        auto_ptr<Info_> help;
+        unique_ptr<Info_> help;
         line = ReadHelp(0, parent, ++line, end, &help); // set help's parent later
         dst->reset(NewMember(parent, name, type, dim, multiple, optional, subtype, from.first, defval.first, &help));
         return line;
@@ -156,10 +156,10 @@ namespace {
         }
 
         Info_* operator()(const string& info_name, const vector<string>& content) const {
-            auto_ptr<Info_> retval(new Info_(0, 0, info_name));
+            unique_ptr<Info_> retval(new Info_(0, 0, info_name));
             auto line = content.begin();
             // read the help
-            auto_ptr<Info_> help;
+            unique_ptr<Info_> help;
             line = ReadHelp(retval.get(), retval.get(), line, content.end(), &help);
             if (help.get())
                 retval->children_.insert(make_pair(HELP, Handle_<Info_>(help.release())));

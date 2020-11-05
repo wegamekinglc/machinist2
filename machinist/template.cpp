@@ -302,7 +302,7 @@ namespace {
 
     Emitter_* ParseFunc(const string& src, bool quiet = false) {
         assert(src.find(EOF) == src.npos); // not prepared for EOF inside body
-        auto_ptr<Composite_> retval(new Composite_);
+        unique_ptr<Composite_> retval(new Composite_);
         for (string::const_iterator here = src.begin(); here != src.end();) {
             if (*here == PCT) {
                 REQUIRE(src.end() - here > 1, "Template can't end with %");

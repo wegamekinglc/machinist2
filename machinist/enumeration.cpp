@@ -34,7 +34,7 @@ namespace {
     static const string ALIAS("alias");
     static const string NUMERIC("numeric");
 
-    Info_* NewMember(const Info_* parent, bool is_default, string all_names, auto_ptr<Info_>* help) {
+    Info_* NewMember(const Info_* parent, bool is_default, string all_names, unique_ptr<Info_>* help) {
         if (is_default)
             std::cout << "Enumeration has default\n";
 
@@ -70,7 +70,7 @@ namespace {
         }
         REQUIRE(!names.empty() || is_default, "Every alternative needs a name");
 
-        auto_ptr<Info_> retval(new Info_(parent, parent, names.empty() ? "_NOT_SET" : EmbeddableForm(names[0])));
+        unique_ptr<Info_> retval(new Info_(parent, parent, names.empty() ? "_NOT_SET" : EmbeddableForm(names[0])));
         for (auto pn = names.begin(); pn != names.end(); ++pn)
             retval->children_.insert(make_pair(ALIAS, MakeLeaf(retval.get(), retval->root_, *pn)));
         if (is_default)
@@ -98,7 +98,7 @@ namespace {
         const string start = UntilWhite(*line);
         const string rest = line->substr(start.size());
 
-        auto_ptr<Info_> help;
+        unique_ptr<Info_> help;
         line = ReadHelp(0, parent, ++line, end, &help); // fix help's parent later
         dst->reset(NewMember(parent, start == DEFAULT, rest, &help));
         return line;
@@ -108,10 +108,10 @@ namespace {
         ParseEnumeration_() { Info::RegisterParser(ENUMERATION, *this); }
 
         Info_* operator()(const string& info_name, const vector<string>& content) const {
-            auto_ptr<Info_> retval(new Info_(0, 0, info_name));
+            unique_ptr<Info_> retval(new Info_(0, 0, info_name));
             auto line = content.begin();
             // read the help
-            auto_ptr<Info_> help;
+            unique_ptr<Info_> help;
             line = ReadHelp(retval.get(), retval.get(), line, content.end(), &help);
             if (help.get())
                 retval->children_.insert(make_pair(HELP, Handle_<Info_>(help.release())));

@@ -35,7 +35,7 @@ string File::PathOnly(const string& filename) {
     return retval;
 }
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 vector<string> File::List(const string& dir, const string& pattern, const vector<string>& reject_patterns) {
     fs::recursive_directory_iterator it(dir);
     fs::recursive_directory_iterator endit;

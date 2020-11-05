@@ -17,10 +17,10 @@ namespace {
         ParseDir_() { Info::RegisterParser(DIR, *this); }
 
         Info_* operator()(const string& info_name, const vector<string>& content) const {
-            auto_ptr<Info_> retval(new Info_(0, 0, info_name)); // name is probably empty and never used...
+            unique_ptr<Info_> retval(new Info_(0, 0, info_name)); // name is probably empty and never used...
             for (auto line = content.begin(); line != content.end(); ++line) {
                 string type = File::InfoType(*line);
-                auto_ptr<Info_> item(new Info_(retval.get(), retval.get(), File::InfoName(*line)));
+                unique_ptr<Info_> item(new Info_(retval.get(), retval.get(), File::InfoName(*line)));
                 retval->children_.insert(make_pair(type, Handle_<Info_>(item.release())));
             }
             return retval.release();

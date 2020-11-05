@@ -24,7 +24,7 @@ namespace {
                       const string& type,
                       const string& varName,
                       const string& secondVar) {
-        auto_ptr<Info_> retval(new Info_(parent, parent, varName));
+        unique_ptr<Info_> retval(new Info_(parent, parent, varName));
 
         retval->children_.insert(make_pair(PATTERN, Info::MakeLeaf(retval.get(), retval->root_, pattern)));
         retval->children_.insert(make_pair(TYPE, Info::MakeLeaf(retval.get(), retval->root_, type)));
@@ -75,7 +75,7 @@ namespace {
 
         Info_* operator()(const string& info_name, const vector<string>& content) const {
 
-            auto_ptr<Info_> retval(new Info_(0, 0, info_name));
+            unique_ptr<Info_> retval(new Info_(0, 0, info_name));
 
             auto line = content.begin();
 

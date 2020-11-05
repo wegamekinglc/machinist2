@@ -88,7 +88,7 @@ namespace {
             }
             rest = rest.substr(0, comma);
         }
-        auto_ptr<Info_> retval(new Info_(parent, root, TrimWhitespace(rest)));
+        unique_ptr<Info_> retval(new Info_(parent, root, TrimWhitespace(rest)));
         if (!measure.empty())
             retval->children_.insert(make_pair(MEASURE, Info::MakeLeaf(retval.get(), root, measure)));
         if (!number.empty())
@@ -124,7 +124,7 @@ namespace {
         ParseRecipe_() { Info::RegisterParser(RECIPE, *this); }
 
         Info_* operator()(const string& info_name, const vector<string>& content) const {
-            auto_ptr<Info_> retval(new Info_(0, 0, info_name));
+            unique_ptr<Info_> retval(new Info_(0, 0, info_name));
             retval->root_ = retval.get();
             auto line = content.begin();
             // might have a c/o at the front
@@ -132,7 +132,7 @@ namespace {
                 retval->children_.insert(make_pair(CO, ParseCO(*line++, retval.get(), retval.get())));
             // have to check for parts
             while (line != content.end() && IsNewPart(*line)) {
-                auto_ptr<Info_> part(new Info_(retval.get(), retval.get(), PartName(*line)));
+                unique_ptr<Info_> part(new Info_(retval.get(), retval.get(), PartName(*line)));
                 line = AddIngredientsAndActions(part.get(), retval.get(), ++line, content.end());
                 retval->children_.insert(make_pair(PART, part.release()));
             }

@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <iostream>
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::map;
 
 bool Info::IsRoot(const Info_& i) {
@@ -48,7 +48,7 @@ namespace {
                      vector<string>::const_iterator& line,
                      vector<string>::const_iterator end,
                      int tab_offset) {
-        auto_ptr<Info_> retval(new Info_(parent, root, info_name));
+        unique_ptr<Info_> retval(new Info_(parent, root, info_name));
         for (;;) {
             int indent = line == end ? -1 : Indent(*line);
             if (indent < tab_offset) // pop out to parent

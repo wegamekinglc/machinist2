@@ -31,7 +31,7 @@ vector<string>::const_iterator ParseUtils::ReadHelp(const Info_* parent,
                                                     const Info_* root,
                                                     vector<string>::const_iterator line,
                                                     vector<string>::const_iterator end,
-                                                    auto_ptr<Info_>* dst,
+                                                    unique_ptr<Info_>* dst,
                                                     vector<Handle_<Info_>>* conditions) {
     while (line != end && StartsWithWhitespace(*line)) {
         string text = AfterInitialWhitespace(*line);
@@ -40,7 +40,7 @@ vector<string>::const_iterator ParseUtils::ReadHelp(const Info_* parent,
             REQUIRE(conditions, "Unexpected '&' in context which does not allow local conditions");
             text = text.substr(1);
             auto bs = text.find('\\');
-            auto_ptr<Info_> temp(new Info_(parent, root, text.substr(0, bs)));
+            unique_ptr<Info_> temp(new Info_(parent, root, text.substr(0, bs)));
             if (bs != string::npos)
                 temp->children_.insert(std::make_pair("help", Info::MakeLeaf(temp.get(), root, text.substr(bs + 1))));
             conditions->push_back(temp.release());
@@ -60,7 +60,7 @@ vector<string>::const_iterator ParseUtils::ReadInsert(const Info_* parent,
                                                       const Info_* root,
                                                       vector<string>::const_iterator line,
                                                       vector<string>::const_iterator end,
-                                                      auto_ptr<Info_>* dst) {
+                                                      unique_ptr<Info_>* dst) {
     while (line != end && !line->empty() && line->front() == '+') {
         if (!dst->get())
             dst->reset(new Info_(parent, root, string()));
@@ -82,8 +82,8 @@ bool ParseUtils::AddNonempty(Info_* info, const string& tag, const string& val) 
 namespace {
     static const string HELP("help");
 
-    Info_* NewCondition(const Info_* parent, const Info_* root, const string& code, auto_ptr<Info_>* help) {
-        auto_ptr<Info_> retval(new Info_(parent, root, code));
+    Info_* NewCondition(const Info_* parent, const Info_* root, const string& code, unique_ptr<Info_>* help) {
+        unique_ptr<Info_> retval(new Info_(parent, root, code));
         if (help->get()) {
             (*help)->parent_ = retval.get();
             retval->children_.insert(make_pair(HELP, Handle_<Info_>(help->release())));
@@ -98,7 +98,7 @@ vector<string>::const_iterator ParseUtils::ReadCondition(const Info_* parent,
                                                          Handle_<Info_>* dst) {
     REQUIRE(!line->empty() && !StartsWithWhitespace(*line), "Expected un-indented line to declare condition");
     const string code = *line;
-    auto_ptr<Info_> help;
+    unique_ptr<Info_> help;
     line = ReadHelp(0, parent, ++line, end, &help); // correct the parent later
     dst->reset(NewCondition(parent, parent->root_, code, &help));
     return line;
@@ -115,7 +115,7 @@ vector<string>::const_iterator ParseUtils::ReadLink(const Info_* parent,
         type = AfterInitialWhitespace(name.substr(space));
         name = name.substr(0, space);
     }
-    auto_ptr<Info_> link(new Info_(parent, parent->root_, name));
+    unique_ptr<Info_> link(new Info_(parent, parent->root_, name));
     if (!type.empty())
         link->children_.insert(std::make_pair("type", Info::MakeLeaf(link.get(), parent->root_, type)));
     dst->reset(link.release());
