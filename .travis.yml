@@ -26,6 +26,7 @@ matrix:
           packages:
             - clang-10
             - libgtest-dev
+            - libstdc++-9-dev
             - libc++-dev
             - libc++abi-dev
             - make
