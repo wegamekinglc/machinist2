@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 export num_cores=`grep -c processor /proc/cpuinfo`
 export MACHINIST_DIR=$PWD
