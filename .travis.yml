@@ -25,7 +25,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - clang-10
+            - g++-9
             - libgtest-dev
+            - libstdc++-9-dev
             - libc++-dev
             - libc++abi-dev
             - make
