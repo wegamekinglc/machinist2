@@ -23,9 +23,9 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-bionic-10.0
+            - ubuntu-toolchain-r-test
           packages:
-            - clang-10.0
+            - clang-10
             - libgtest-dev
             - libc++-dev
             - libboost-all-dev
