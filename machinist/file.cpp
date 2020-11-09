@@ -21,7 +21,7 @@ namespace {
 } // namespace
 
 string File::Path(const string& dir_in) {
-    return (dir_in.empty() || dir_in == ".") ? string() : (IsSlash(dir_in.back()) ? dir_in : dir_in + "\\");
+    return (dir_in.empty() || dir_in == ".") ? string() : (IsSlash(dir_in.back()) ? dir_in : dir_in + "/");
 }
 string File::CombinedPath(const string& path1, const string& path2) {
     return (path2.empty() || path2[0] == '.') ? path1 + path2 // path2 is relative
