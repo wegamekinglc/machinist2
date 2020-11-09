@@ -12,7 +12,6 @@ matrix:
           packages:
             - libgtest-dev
             - g++-9
-            - libc++-dev
             - make
             - cmake
             - lcov
@@ -25,11 +24,10 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - clang-10
-            - g++-9
             - libgtest-dev
-            - libstdc++-9-dev
-            - libc++-dev
-            - libc++abi-dev
+            - libstdc++-10-dev
+            - libc++-10-dev
+            - libc++abi-10-dev
             - make
             - cmake
             - lcov
