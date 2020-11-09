@@ -454,7 +454,7 @@ namespace {
         if (TypeToIndex(type) == ENUM) {
             return "[](const Archive::View_& src) { return " + subtype + "_(src.AsString()); }";
         }
-        string retval = "std::mem_fun_ref(&Archive::View_::As";
+        string retval = "std::mem_fn(&Archive::View_::As";
         string scalar = ScalarCType(type, subtype); // except Settings
         if (TypeToIndex(type) == SETTINGS_)
             scalar = "Dictionary";
