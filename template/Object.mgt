@@ -175,19 +175,18 @@ public class %_()
 </table>
 `Serialization and deserialization for storables
 %:CWrite:%?{%_(is_storable)}{
-namespace Dal {
-    namespace %FullType()
-    {
-       void XWrite
-           (Archive::Store_& dst%*[member]{, const %QuantifiedCType()& %_()})
-       {
-           using namespace Archive::Utils;
-           dst.SetType("%FullType()");
-    %*[member]{	   %WriteChild()
-    }`
-           dst.Done();
-       }
-    }
+using namespace Dal;
+namespace %FullType()
+{
+   void XWrite
+       (Archive::Store_& dst%*[member]{, const %QuantifiedCType()& %_()})
+   {
+       using namespace Archive::Utils;
+       dst.SetType("%FullType()");
+%*[member]{	   %WriteChild()
+}`
+       dst.Done();
+   }
 }
 }	` end of CWrite
 %:QuantifiedCType:%?{%_(multiple)}{Vector_<}%CType()%?{%_(multiple)}{>}`
@@ -200,39 +199,38 @@ namespace Dal {
 %:FullType:%_()%?{%_(version)}{_v%_(version)}`
 %:BuiltType:%|{%?{%_(manual)}{Storable_}}{%_()_}`
 %:CRead:%?{%_(is_storable)}{
-namespace Dal {
-    namespace %FullType()
+using namespace Dal;
+namespace %FullType()
+{
+    struct Reader_ : Archive::Reader_
     {
-        struct Reader_ : Archive::Reader_
+%*[member]{		%?{%IsSettings()}{Dictionary_}%~{%IsSettings()}{%QuantifiedCType()} %_()_;
+}`
+        Reader_(const Archive::View_& src, Archive::Built_& share)
         {
-    %*[member]{		%?{%IsSettings()}{Dictionary_}%~{%IsSettings()}{%QuantifiedCType()} %_()_;
-    }`
-            Reader_(const Archive::View_& src, Archive::Built_& share)
-            {
-                using namespace Archive::Utils;
-                NOTE("Reading %FullType() from store");
-                assert(src.Type() == "%FullType()");
-    %*[member]{       %GetChild()
-    }`
-            }
-            %BuiltType()* Build() const%?{%_(manual)}{;	// handwritten}
-    %~{%_(manual)}{`
-          {
-             return new %_()_(%*[member], {%_()_});
-          }
-    }`
-            %BuiltType()* Build(const Archive::View_& src, Archive::Built_& share) const
-            {
-                return Reader_(src, share).Build();
-            }
+            using namespace Archive::Utils;
+            NOTE("Reading %FullType() from store");
+            assert(src.Type() == "%FullType()");
+%*[member]{       %GetChild()
+}`
+        }
+        %BuiltType()* Build() const%?{%_(manual)}{;	// handwritten}
+%~{%_(manual)}{`
+      {
+         return new %_()_(%*[member], {%_()_});
+      }
+}`
+        %BuiltType()* Build(const Archive::View_& src, Archive::Built_& share) const
+        {
+            return Reader_(src, share).Build();
+        }
 
-            // constructor-through-registry (safer than default constructor)
-            Reader_(void (*register_func)(const String_&, const Archive::Reader_*))
-            {
-                register_func("%FullType()", this);
-            }
-        };
-        static Reader_ TheData(Archive::Register);
-    }
+        // constructor-through-registry (safer than default constructor)
+        Reader_(void (*register_func)(const String_&, const Archive::Reader_*))
+        {
+            register_func("%FullType()", this);
+        }
+    };
+    static Reader_ TheData(Archive::Register);
 }
 }	` end of CRead
