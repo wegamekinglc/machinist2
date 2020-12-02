@@ -39,6 +39,8 @@ in examples indicate newline and tab, not literal escape sequences.
 
 ~Machinist uses the Windows API to read and write files; it will not run on any other OS.~
 
+Now **Machinist** works both on windows and unix style OS.
+
 
 ## The Command Line
 
