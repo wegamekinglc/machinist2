@@ -244,7 +244,7 @@ namespace
 void XMain(int argc, char* argv[])
 {
 	char buf[2048];
-	getcwd(buf, 2048);
+        (void)getcwd(buf, 2048);
 	cout << "In directory " << buf << "\n";
 
 	string configFile;
