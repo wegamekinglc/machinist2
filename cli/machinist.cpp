@@ -19,24 +19,20 @@
 using std::pair;
 using std::cout;
 
-namespace
-{
+namespace {
     void ReadCommandLine
         (int argc,
          char* argv[],
          string* config,
          vector<string>* libs,
-         vector<string>* dirs)
-    {
-        for (int ii = 1; ii < argc; ++ii)
-        {
+         vector<string>* dirs) {
+        for (int ii = 1; ii < argc; ++ii) {
             string arg(argv[ii]);
-            assert(!arg.empty());
-            if (arg[0] == '-')	// command-line switch
-            {
+            REQUIRE(!arg.empty(), "machinist can't run without offering arguments");
+            if (arg[0] == '-') {
+                // command-line switch
                 REQUIRE(arg.size() == 2, "Unrecognized command line switch");
-                switch (arg[1])
-                {
+                switch (arg[1]) {
                 case 'c':
                     REQUIRE(ii + 1 < argc, "-c switch must be followed by a config filename");
                     REQUIRE(config->empty(), "Can't supply multiple configs");
@@ -57,8 +53,7 @@ namespace
                     throw std::runtime_error("Unrecognized command line switch");
                 }
             }
-            else
-            {
+            else {
                 // can't understand this
                 REQUIRE(0, "Unexpected command line input");
             }
@@ -70,12 +65,10 @@ namespace
             dirs->push_back(".");	// the default
     }
 
-    bool SameExceptLF(const string& s1, const string& s2)
-    {
+    bool SameExceptLF(const string& s1, const string& s2) {
         char LF(10);
         auto p1 = s1.begin(), p2 = s2.begin();
-        while (p1 != s1.end() && p2 != s2.end())
-        {
+        while (p1 != s1.end() && p2 != s2.end()) {
             if (*p1 == LF)
                 ++p1;
             else if (*p2 == LF)
@@ -89,48 +82,43 @@ namespace
         return p1 == s1.end() && p2 == s2.end();
     }
 
-    bool StartsWith(const string& line, const string& token)
-    {
+    bool StartsWith(const string& line, const string& token) {
         return line.find(token) == 0;
     }
 
-    pair<string, string> TypeAndName(const string& line)
-    {
+    pair<string, string> TypeAndName(const string& line) {
         // just handle space-separated pair
         auto space = line.find(' ');
         REQUIRE(space != 0 && space != string::npos, "Can't find type/name separator");
         return make_pair(line.substr(0, space), line.substr(space + 1));
     }
 
-    vector<string> AsDir(const vector<pair<string, string>> types_and_names)	// reverses the operation of File::InfoType/Name, just to get things back in a format the dir emitter understands
-    {
-        vector<string> retval;
-        for (auto pf = types_and_names.begin(); pf != types_and_names.end(); ++pf)
-        {
-            retval.push_back(pf->second + "." + pf->first + ".if");
-        }
-        return retval;
+    vector<string> AsDir(const vector<pair<string, string>>& types_and_names) {
+        // reverses the operation of File::InfoType/Name,
+        // just to get things back in a format the dir emitter understands
+        vector<string> ret_val;
+        ret_val.reserve(types_and_names.size());
+        for (const auto &pair : types_and_names)
+            ret_val.push_back(pair.second + "." + pair.first + ".if");
+        return ret_val;
     }
-
 
     void WriteIfChanged
         (const string& dst_name,
          const vector<string>& output,
-         int* n_written)
-    {
+         int* n_written) {
         // I guess we have to read it
         vector<string> prior;
         File::Read(dst_name, &prior);
-        const string allOld = accumulate(prior.begin(), prior.end(), string(), std::plus<string>());
-        const string allNew = accumulate(output.begin(), output.end(), string(), std::plus<string>());
+        const string allOld = accumulate(prior.begin(), prior.end(), string(), std::plus<>());
+        const string allNew = accumulate(output.begin(), output.end(), string(), std::plus<>());
 
-        if (!SameExceptLF(allOld, allNew))
-        {
+        if (!SameExceptLF(allOld, allNew)) {
             cout << "\tWriting " << dst_name << "\n";
             ++*n_written;
             std::ofstream dst(dst_name);
-            for (auto po = output.begin(); po != output.end(); ++po)
-                dst << *po;
+            for (const auto & po : output)
+                dst << po;
         }
     }
 
@@ -140,18 +128,15 @@ namespace
          const string& path,
          const pair<string, string>& type_and_name,
          const vector<string>& content,
-         int* n_written)
-    {
+         int* n_written) {
         const Emitter::Funcs_& allFuncs = Emitter::GetAll(type_and_name.first, File::CombinedPath(config.ownPath_, config.templatePath_), lib);	// might parse a template file, lazily; will hold a static registry
         const Handle_<Info_> info = Info::Parse(type_and_name.first, type_and_name.second, content);	// will access a static registry of parsers
         const vector<Config_::Output_>& targets = config.vals_.find(type_and_name.first)->second;
-        for (auto pt = targets.begin(); pt != targets.end(); ++pt)
-        {
-            string dstName = path + pt->dst_(*info);
+        for (const auto & target : targets) {
+            string dstName = path + target.dst_(*info);
             vector<string> output;
-            for (auto pToEmit = pt->emitters_.begin(); pToEmit != pt->emitters_.end(); ++pToEmit)
-            {
-                auto out = Emitter::Call(*info, allFuncs, *pToEmit);
+            for (const auto & emitter : target.emitters_) {
+                auto out = Emitter::Call(*info, allFuncs, emitter);
                 output.insert(output.end(), out.begin(), out.end());
             }
             WriteIfChanged(dstName, output, n_written);
@@ -173,18 +158,16 @@ namespace
          const string& filename,
          vector<pair<string, string>>* things_read,
          int* n_written,
-         int* n_lines)
-    {
+         int* n_lines) {
         cout << "Reading " << filename.c_str() << "\n";
         const string infoType = File::InfoType(filename);
-        if (!config.vals_.count(infoType))
-        {
+        if (!config.vals_.count(infoType)) {
             cout << "Skipping -- nothing to write\n";
             return;
         }
         vector<string> content;
         File::Read(path + filename, &content);
-        *n_lines += content.size();
+        *n_lines += static_cast<int>(content.size());
         things_read->push_back(make_pair(infoType, File::InfoName(filename)));
         WriteFromContents(config, lib, path, things_read->back(), content, n_written);
     }
@@ -198,10 +181,8 @@ namespace
          const string& stop_token,
          vector<pair<string, string>>* things_read,
          int* n_written,
-         int* n_lines)
-    {
-        if (start_token.empty())
-        {
+         int* n_lines) {
+        if (start_token.empty()) {
             WriteInfoFile(config, lib, path, filename, things_read, n_written, n_lines);
             return;
         }
@@ -209,18 +190,17 @@ namespace
         cout.flush();
         vector<string> content;
         File::Read(filename, &content);
-        *n_lines += content.size();
-        for (auto pl = content.begin(); pl != content.end(); ++pl)
-        {
+        *n_lines += static_cast<int>(content.size());
+        for (auto pl = content.begin(); pl != content.end(); ++pl) {
             if (StartsWith(*pl, start_token))
             {
             cout << "Found start token at " << (pl - content.begin()) << "\n";
                 // scan forward to find the stop token
                 auto pStop = pl;
-                for ( ; ; )
-                {
-                    if (++pStop == content.end())
+                for ( ; ; ) {
+                    if (++pStop == content.end()) {
                         REQUIRE(stop_token.empty(), "Reached end of file without stop token");
+                    }
                     if (pStop == content.end() || StartsWith(*pStop, stop_token))
                         break;
                 }
@@ -231,8 +211,7 @@ namespace
                 auto typeAndName = TypeAndName(*pFirst);
                 if (!config.vals_.count(typeAndName.first))
                     cout << "Skipping -- nothing to write\n";
-                else
-                {
+                else {
                     things_read->push_back(typeAndName);
                     WriteFromContents(config, lib, path, typeAndName, vector<string>(pContent, pStop), n_written);
                 }
@@ -241,8 +220,7 @@ namespace
     }
 }	// leave local
 
-void XMain(int argc, char* argv[])
-{
+void XMain(int argc, char* argv[]) {
     char buf[2048];
         (void)getcwd(buf, 2048);
     cout << "In directory " << buf << "\n";
@@ -253,44 +231,40 @@ void XMain(int argc, char* argv[])
     Config_ config = Config::Read(configFile);
     // read library contents
     vector<string> libContents;
-    for (auto pl = libs.begin(); pl != libs.end(); ++pl)
-        File::Read(*pl, &libContents);
+    for (auto & lib : libs)
+        File::Read(lib, &libContents);
 
     // loop over directories
-    for (auto pd = dirs.begin(); pd != dirs.end(); ++pd)
-    {
+    for (auto & dir : dirs) {
         // keep track of actions in this directory only
         vector<pair<string, string>> thingsRead;
         int nWritten = 0, nRead = 0, nLines = 0;
         // set directory
-        cout << "Scanning " << *pd << "\n";
-        const string path = File::Path(*pd);
+        cout << "Scanning " << dir << "\n";
+        const string path = File::Path(dir);
 
         // loop over input file types
         for (auto ps = config.sources_.begin(); ps != config.sources_.end(); ++ps)
         {
-            vector<string> infoFiles = File::List(*pd, ps->filePattern_, ps->rejectPatterns_);
+            vector<string> infoFiles = File::List(dir, ps->filePattern_, ps->rejectPatterns_);
             for (auto pi = infoFiles.begin(); pi != infoFiles.end(); ++pi, ++nRead)
                 WriteOneFile(config, libContents, path, *pi, ps->startToken_, ps->stopToken_, &thingsRead, &nWritten, &nLines);
         }
         cout << "Scanned " << nRead << " files (" << nLines << " lines), found " << thingsRead.size() << " blocks\n";
         // finally write the whole-directory info
-      WriteFromContents(config, libContents, path, make_pair(string("dir"), File::DirInfoName(*pd)), AsDir(thingsRead), &nWritten);
+        WriteFromContents(config, libContents, path, make_pair(string("dir"), File::DirInfoName(dir)), AsDir(thingsRead), &nWritten);
 
         cout << "Wrote " << nWritten << " files\n";
-        cout << "Machinist finished directory " << *pd << "\n";
+        cout << "Machinist finished directory " << dir << "\n";
     }
 }
 
-int main(int argc, char* argv[])
-{
-    try
-    {
+int main(int argc, char* argv[]) {
+    try {
         XMain(argc, argv);
         return 0;
     }
-    catch (std::exception& e)
-    {
+    catch (std::exception& e) {
         std::cerr << "Error:  " << e.what() << "\n";
         return -1;
     }

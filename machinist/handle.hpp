@@ -16,7 +16,7 @@ using std::vector;
     if (cond)                                                                                                          \
         ;                                                                                                              \
     else                                                                                                               \
-        throw std::runtime_error(string(msg).c_str());
+        throw std::runtime_error(string(msg).c_str())
 #define THROW(msg) throw std::runtime_error(string(msg).c_str());
 template <class T_> T_ Next(const T_& p) { return p + 1; }
 template <class T_> const T_& Max(const T_& a, const T_& b) { return a > b ? a : b; }
