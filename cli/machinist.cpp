@@ -1,12 +1,16 @@
- // Machinist.cpp : Defines the entry point for the console application.
+// Machinist.cpp : Defines the entry point for the console application.
 //
 #include "../machinist/handle.hpp"
+
 #ifdef _WIN32
-    #include <direct.h>
-    #define getcwd _getcwd // stupid MSFT "deprecation" warning
+
+#include <direct.h>
+
+#define getcwd _getcwd // stupid MSFT "deprecation" warning
 #else
-    #include <unistd.h>
+#include <unistd.h>
 #endif
+
 #include <iostream>
 #include <fstream>
 #include <cassert>
@@ -22,11 +26,11 @@ using std::endl;
 
 namespace {
     void ReadCommandLine
-        (int argc,
-         char* argv[],
-         string* config,
-         vector<string>* libs,
-         vector<string>* dirs) {
+            (int argc,
+             char *argv[],
+             string *config,
+             vector<string> *libs,
+             vector<string> *dirs) {
         for (int ii = 1; ii < argc; ++ii) {
             string arg(argv[ii]);
             REQUIRE(!arg.empty(), "machinist can't run without offering arguments");
@@ -34,39 +38,38 @@ namespace {
                 // command-line switch
                 REQUIRE(arg.size() == 2, "Unrecognized command line switch");
                 switch (arg[1]) {
-                case 'c':
-                    REQUIRE(ii + 1 < argc, "-c switch must be followed by a config filename");
-                    REQUIRE(config->empty(), "Can't supply multiple configs");
-                    *config = argv[++ii];	// jump forward to this input
-                    break;
+                    case 'c':
+                        REQUIRE(ii + 1 < argc, "-c switch must be followed by a config filename");
+                        REQUIRE(config->empty(), "Can't supply multiple configs");
+                        *config = argv[++ii];    // jump forward to this input
+                        break;
 
-                case 'd':
-                    REQUIRE(ii + 1 < argc, "-d switch must be followed by a working directory");
-                    dirs->push_back(string(argv[++ii]));	// jump forward to this input
-                    break;
+                    case 'd':
+                        REQUIRE(ii + 1 < argc, "-d switch must be followed by a working directory");
+                        dirs->push_back(string(argv[++ii]));    // jump forward to this input
+                        break;
 
-                case 'l':
-                    REQUIRE(ii + 1 < argc, "-l must be followed by a template library filename");
-                    libs->push_back(string(argv[++ii]));	// jump forward to this input
-                    break;
+                    case 'l':
+                        REQUIRE(ii + 1 < argc, "-l must be followed by a template library filename");
+                        libs->push_back(string(argv[++ii]));    // jump forward to this input
+                        break;
 
-                default:
-                    throw std::runtime_error("Unrecognized command line switch");
+                    default:
+                        throw std::runtime_error("Unrecognized command line switch");
                 }
-            }
-            else {
+            } else {
                 // can't understand this
                 REQUIRE(0, "Unexpected command line input");
             }
         }
 
         if (config->empty())
-            *config = "config.ifc";	// the default
+            *config = "config.ifc";    // the default
         if (dirs->empty())
-            dirs->push_back(".");	// the default
+            dirs->push_back(".");    // the default
     }
 
-    bool SameExceptLF(const string& s1, const string& s2) {
+    bool SameExceptLF(const string &s1, const string &s2) {
         char LF(10);
         auto p1 = s1.begin(), p2 = s2.begin();
         while (p1 != s1.end() && p2 != s2.end()) {
@@ -83,18 +86,18 @@ namespace {
         return p1 == s1.end() && p2 == s2.end();
     }
 
-    bool StartsWith(const string& line, const string& token) {
+    bool StartsWith(const string &line, const string &token) {
         return line.find(token) == 0;
     }
 
-    pair<string, string> TypeAndName(const string& line) {
+    pair<string, string> TypeAndName(const string &line) {
         // just handle space-separated pair
         auto space = line.find(' ');
         REQUIRE(space != 0 && space != string::npos, "Can't find type/name separator");
         return make_pair(line.substr(0, space), line.substr(space + 1));
     }
 
-    vector<string> AsDir(const vector<pair<string, string>>& types_and_names) {
+    vector<string> AsDir(const vector<pair<string, string>> &types_and_names) {
         // reverses the operation of File::InfoType/Name,
         // just to get things back in a format the dir emitter understands
         vector<string> ret_val;
@@ -105,9 +108,9 @@ namespace {
     }
 
     void WriteIfChanged
-        (const string& dst_name,
-         const vector<string>& output,
-         int* n_written) {
+            (const string &dst_name,
+             const vector<string> &output,
+             int *n_written) {
         // I guess we have to read it
         vector<string> prior;
         File::Read(dst_name, &prior);
@@ -118,25 +121,28 @@ namespace {
             cout << "\tWriting " << dst_name << "\n";
             ++*n_written;
             std::ofstream dst(dst_name);
-            for (const auto & po : output)
+            for (const auto &po : output)
                 dst << po;
         }
     }
 
     void WriteFromContents
-        (const Config_& config,
-         const vector<string>& lib,
-         const string& path,
-         const pair<string, string>& type_and_name,
-         const vector<string>& content,
-         int* n_written) {
-        const Emitter::Funcs_& allFuncs = Emitter::GetAll(type_and_name.first, File::CombinedPath(config.ownPath_, config.templatePath_), lib);	// might parse a template file, lazily; will hold a static registry
-        const Handle_<Info_> info = Info::Parse(type_and_name.first, type_and_name.second, content);	// will access a static registry of parsers
-        const vector<Config_::Output_>& targets = config.vals_.find(type_and_name.first)->second;
-        for (const auto & target : targets) {
+            (const Config_ &config,
+             const vector<string> &lib,
+             const string &path,
+             const pair<string, string> &type_and_name,
+             const vector<string> &content,
+             int *n_written) {
+        const Emitter::Funcs_ &allFuncs = Emitter::GetAll(type_and_name.first,
+                                                          File::CombinedPath(config.ownPath_, config.templatePath_),
+                                                          lib);    // might parse a template file, lazily; will hold a static registry
+        const Handle_<Info_> info = Info::Parse(type_and_name.first, type_and_name.second,
+                                                content);    // will access a static registry of parsers
+        const vector<Config_::Output_> &targets = config.vals_.find(type_and_name.first)->second;
+        for (const auto &target : targets) {
             string dstName = path + target.dst_(*info);
             vector<string> output;
-            for (const auto & emitter : target.emitters_) {
+            for (const auto &emitter : target.emitters_) {
                 auto out = Emitter::Call(*info, allFuncs, emitter);
                 output.insert(output.end(), out.begin(), out.end());
             }
@@ -153,13 +159,13 @@ namespace {
     // but may be more amenable to developers
 
     void WriteInfoFile
-        (const Config_& config,
-         const vector<string>& lib,
-         const string& path,
-         const string& filename,
-         vector<pair<string, string>>* things_read,
-         int* n_written,
-         int* n_lines) {
+            (const Config_ &config,
+             const vector<string> &lib,
+             const string &path,
+             const string &filename,
+             vector<pair<string, string>> *things_read,
+             int *n_written,
+             int *n_lines) {
         cout << "Reading " << filename.c_str() << endl;
         const string infoType = File::InfoType(filename);
         if (!config.vals_.count(infoType)) {
@@ -174,15 +180,15 @@ namespace {
     }
 
     void WriteOneFile
-        (const Config_& config,
-         const vector<string>& lib,
-         const string& path,
-         const string& filename,
-         const string& start_token,
-         const string& stop_token,
-         vector<pair<string, string>>* things_read,
-         int* n_written,
-         int* n_lines) {
+            (const Config_ &config,
+             const vector<string> &lib,
+             const string &path,
+             const string &filename,
+             const string &start_token,
+             const string &stop_token,
+             vector<pair<string, string>> *things_read,
+             int *n_written,
+             int *n_lines) {
         if (start_token.empty()) {
             WriteInfoFile(config, lib, path, filename, things_read, n_written, n_lines);
             return;
@@ -194,10 +200,10 @@ namespace {
         *n_lines += static_cast<int>(content.size());
         for (auto pl = content.begin(); pl != content.end(); ++pl) {
             if (StartsWith(*pl, start_token)) {
-            cout << "Found start token at " << (pl - content.begin()) << endl;
+                cout << "Found start token at " << (pl - content.begin()) << endl;
                 // scan forward to find the stop token
                 auto pStop = pl;
-                for ( ; ; ) {
+                for (;;) {
                     if (++pStop == content.end()) {
                         REQUIRE(stop_token.empty(), "Reached end of file without stop token");
                     }
@@ -218,11 +224,11 @@ namespace {
             }
         }
     }
-}	// leave local
+}    // leave local
 
-void XMain(int argc, char* argv[]) {
+void XMain(int argc, char *argv[]) {
     char buf[2048];
-        (void)getcwd(buf, 2048);
+    (void) getcwd(buf, 2048);
     cout << "In directory " << buf << endl;
 
     string configFile;
@@ -231,11 +237,11 @@ void XMain(int argc, char* argv[]) {
     Config_ config = Config::Read(configFile);
     // read library contents
     vector<string> libContents;
-    for (auto & lib : libs)
+    for (auto &lib : libs)
         File::Read(lib, &libContents);
 
     // loop over directories
-    for (auto & dir : dirs) {
+    for (auto &dir : dirs) {
         // keep track of actions in this directory only
         vector<pair<string, string>> thingsRead;
         int nWritten = 0, nRead = 0, nLines = 0;
@@ -244,27 +250,29 @@ void XMain(int argc, char* argv[]) {
         const string path = File::Path(dir);
 
         // loop over input file types
-        for (auto ps = config.sources_.begin(); ps != config.sources_.end(); ++ps)
-        {
+        for (auto ps = config.sources_.begin(); ps != config.sources_.end(); ++ps) {
             vector<string> infoFiles = File::List(dir, ps->filePattern_, ps->rejectPatterns_);
             for (auto pi = infoFiles.begin(); pi != infoFiles.end(); ++pi, ++nRead)
-                WriteOneFile(config, libContents, path, *pi, ps->startToken_, ps->stopToken_, &thingsRead, &nWritten, &nLines);
+                WriteOneFile(config, libContents, path, *pi, ps->startToken_, ps->stopToken_, &thingsRead, &nWritten,
+                             &nLines);
         }
-        cout << "Scanned " << nRead << " files (" << nLines << " lines), found " << thingsRead.size() << " blocks" << endl;
+        cout << "Scanned " << nRead << " files (" << nLines << " lines), found " << thingsRead.size() << " blocks"
+             << endl;
         // finally write the whole-directory info
-        WriteFromContents(config, libContents, path, make_pair(string("dir"), File::DirInfoName(dir)), AsDir(thingsRead), &nWritten);
+        WriteFromContents(config, libContents, path, make_pair(string("dir"), File::DirInfoName(dir)),
+                          AsDir(thingsRead), &nWritten);
 
         cout << "Wrote " << nWritten << " files" << endl;
         cout << "Machinist finished directory " << dir << endl;
     }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     try {
         XMain(argc, argv);
         return 0;
     }
-    catch (std::exception& e) {
+    catch (std::exception &e) {
         std::cerr << "Error:  " << e.what() << endl;
         return -1;
     }
