@@ -18,6 +18,7 @@
 
 using std::pair;
 using std::cout;
+using std::endl;
 
 namespace {
     void ReadCommandLine
@@ -159,10 +160,10 @@ namespace {
          vector<pair<string, string>>* things_read,
          int* n_written,
          int* n_lines) {
-        cout << "Reading " << filename.c_str() << "\n";
+        cout << "Reading " << filename.c_str() << endl;
         const string infoType = File::InfoType(filename);
         if (!config.vals_.count(infoType)) {
-            cout << "Skipping -- nothing to write\n";
+            cout << "Skipping -- nothing to write" << endl;
             return;
         }
         vector<string> content;
@@ -192,9 +193,8 @@ namespace {
         File::Read(filename, &content);
         *n_lines += static_cast<int>(content.size());
         for (auto pl = content.begin(); pl != content.end(); ++pl) {
-            if (StartsWith(*pl, start_token))
-            {
-            cout << "Found start token at " << (pl - content.begin()) << "\n";
+            if (StartsWith(*pl, start_token)) {
+            cout << "Found start token at " << (pl - content.begin()) << endl;
                 // scan forward to find the stop token
                 auto pStop = pl;
                 for ( ; ; ) {
@@ -207,10 +207,10 @@ namespace {
                 auto pFirst = Next(pl);
                 REQUIRE(pStop > pFirst, "No content between start and end tokens");
                 auto pContent = Next(pFirst);
-                cout << "Found content under " << pFirst->c_str() << "\n";
+                cout << "Found content under " << pFirst->c_str() << endl;
                 auto typeAndName = TypeAndName(*pFirst);
                 if (!config.vals_.count(typeAndName.first))
-                    cout << "Skipping -- nothing to write\n";
+                    cout << "Skipping -- nothing to write" << endl;
                 else {
                     things_read->push_back(typeAndName);
                     WriteFromContents(config, lib, path, typeAndName, vector<string>(pContent, pStop), n_written);
@@ -223,7 +223,7 @@ namespace {
 void XMain(int argc, char* argv[]) {
     char buf[2048];
         (void)getcwd(buf, 2048);
-    cout << "In directory " << buf << "\n";
+    cout << "In directory " << buf << endl;
 
     string configFile;
     vector<string> libs, dirs;
@@ -250,12 +250,12 @@ void XMain(int argc, char* argv[]) {
             for (auto pi = infoFiles.begin(); pi != infoFiles.end(); ++pi, ++nRead)
                 WriteOneFile(config, libContents, path, *pi, ps->startToken_, ps->stopToken_, &thingsRead, &nWritten, &nLines);
         }
-        cout << "Scanned " << nRead << " files (" << nLines << " lines), found " << thingsRead.size() << " blocks\n";
+        cout << "Scanned " << nRead << " files (" << nLines << " lines), found " << thingsRead.size() << " blocks" << endl;
         // finally write the whole-directory info
         WriteFromContents(config, libContents, path, make_pair(string("dir"), File::DirInfoName(dir)), AsDir(thingsRead), &nWritten);
 
-        cout << "Wrote " << nWritten << " files\n";
-        cout << "Machinist finished directory " << dir << "\n";
+        cout << "Wrote " << nWritten << " files" << endl;
+        cout << "Machinist finished directory " << dir << endl;
     }
 }
 
@@ -265,7 +265,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     catch (std::exception& e) {
-        std::cerr << "Error:  " << e.what() << "\n";
+        std::cerr << "Error:  " << e.what() << endl;
         return -1;
     }
 }
