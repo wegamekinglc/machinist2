@@ -22,18 +22,18 @@ Enum
 
 namespace {
     bool NamesFile(const string& line) {
-        return line.size() > 3 && line[0] == '-' && line[1] == '>' && line.find_first_of("#%") != line.npos;
+        return line.size() > 3 && line[0] == '-' && line[1] == '>' && line.find_first_of("#%") != std::string::npos;
     }
 
     bool NamesSources(const string& line) { return line.size() > 3 && line[0] == '<' && line[1] == '-'; }
 
     vector<string> SourcePatterns(const string& line, vector<string>* reject) {
         string rest = line.substr(2);
-        vector<string> retval;
+        vector<string> ret_val;
         bool rejecting = false;
         while (!rest.empty()) {
             auto stop = rest.find_first_of(";!");
-            (rejecting ? reject : &retval)->push_back(rest.substr(0, stop));
+            (rejecting ? reject : &ret_val)->push_back(rest.substr(0, stop));
             if (stop == string::npos)
                 rest.clear();
             else {
@@ -42,43 +42,43 @@ namespace {
                 rest = rest.substr(stop + 1);
             }
         }
-        return retval;
+        return ret_val;
     }
 
-    vector<string> split(const string& input, char sep, vector<string> sofar = vector<string>()) {
-        auto bar = input.find(sep);
+    vector<string> split(const string &input, vector<string> so_far = vector<string>()) {
+        auto bar = input.find(124);
         if (bar == string::npos) {
-            sofar.push_back(input);
-            return sofar;
+            so_far.push_back(input);
+            return so_far;
         }
-        sofar.push_back(input.substr(0, bar));
-        return split(input.substr(bar + 1), sep, sofar);
+        so_far.push_back(input.substr(0, bar));
+        return split(input.substr(bar + 1), so_far);
     }
 
     void CommitAndReset(Config_* dst, const string& type, Config_::Output_* contrib) {
         if (!contrib->emitters_.empty()) {
-            for (auto t : split(type, '|'))
+            for (const auto& t : split(type))
                 dst->vals_[t].push_back(*contrib);
             contrib->emitters_.clear();
         }
     }
 
-    bool StartsWithBackquote(const string& line) {
-        int nonblank = line.find_first_not_of(" \t");
-        return nonblank == string::npos // all blank
-               || line[nonblank] == '`';
+    bool StartsWithBackQuote(const string& line) {
+        auto non_blank = line.find_first_not_of(" \t");
+        return non_blank == string::npos // all blank
+               || line[non_blank] == '`';
     }
 
-    static const string FILENAME_FUNC("__OutputFile");
+    const string FILENAME_FUNC("__OutputFile");
 
-    string AddEnvironment(const string& src, int offset = 0, const string& sofar = string()) {
+    string AddEnvironment(const string& src, int offset = 0, const string& so_far = string()) {
         auto start = src.find("$(", offset);
         if (start == string::npos)
-            return sofar + src.substr(offset);
+            return so_far + src.substr(offset);
         start += 2;
-        auto stop = src.find(")", start);
-        REQUIRE(stop != string::npos, "Nonterminated environment variable");
-        return AddEnvironment(src, stop + 1, sofar + EnvironmentValue(src.substr(start, stop - start)));
+        auto stop = src.find(')', start);
+        REQUIRE(stop != string::npos, "Non-terminated environment variable");
+        return AddEnvironment(src, static_cast<int>(stop + 1), so_far + EnvironmentValue(src.substr(start, stop - start)));
     }
 } // namespace
 
@@ -86,18 +86,17 @@ Config_ Config::Read(const string& filename) {
     vector<string> src;
     std::cout << "Reading configuration from " << filename << "\n";
     File::Read(filename, &src);
-    Config_ retval;
-    retval.ownPath_ = File::PathOnly(filename);
+    Config_ ret_val;
+    ret_val.ownPath_ = File::PathOnly(filename);
     string theType;
     vector<int> theSources;
     Config_::Output_ theFile;
 
-    for (auto pl = src.begin(); pl != src.end(); ++pl) {
-        const string& line = *pl;
-        if (line.empty() || StartsWithBackquote(line))
+    for (auto & line : src) {
+        if (line.empty() || StartsWithBackQuote(line))
             continue;
         else if (line[0] == '@') {
-            retval.templatePath_ = AddEnvironment(line.substr(1));
+            ret_val.templatePath_ = AddEnvironment(line.substr(1));
         } else if (line[0] == '\t') {
             if (!theType.empty()) {
                 REQUIRE(!theFile.dst_.funcs_.empty(),
@@ -108,8 +107,8 @@ Config_ Config::Read(const string& filename) {
             } else if (!theSources.empty()) {
                 const string token = line.substr(1);
                 // add start/stop tokens for these sources
-                for (auto ps = theSources.begin(); ps != theSources.end(); ++ps) {
-                    auto& dst = retval.sources_[*ps];
+                for (auto source : theSources) {
+                    auto& dst = ret_val.sources_[source];
                     if (dst.startToken_.empty())
                         dst.startToken_ = token;
                     else {
@@ -123,7 +122,7 @@ Config_ Config::Read(const string& filename) {
         } else if (NamesFile(line)) {
             REQUIRE(!theType.empty(), "Mark-up type must be supplied before file namers can be assigned to it");
             // store the previous file output
-            CommitAndReset(&retval, theType, &theFile);
+            CommitAndReset(&ret_val, theType, &theFile);
             auto func = line;
             auto hash = line.find('#');
             if (hash != string::npos)
@@ -137,23 +136,23 @@ Config_ Config::Read(const string& filename) {
             theSources.clear();
             vector<string> reject;
             auto patterns = SourcePatterns(line, &reject);
-            for (auto pp = patterns.begin(); pp != patterns.end(); ++pp) {
-                theSources.push_back(retval.sources_.size());
-                retval.sources_.push_back(*pp);
-                retval.sources_.back().rejectPatterns_ = reject;
+            for (auto & pattern : patterns) {
+                theSources.push_back(static_cast<int>(ret_val.sources_.size()));
+                ret_val.sources_.emplace_back(pattern);
+                ret_val.sources_.back().rejectPatterns_ = reject;
             }
             // theSources keeps locations to which start/stop tokens can be written
         } else {
             // store the previous file output
-            CommitAndReset(&retval, theType, &theFile);
+            CommitAndReset(&ret_val, theType, &theFile);
             theFile.dst_.funcs_.clear();
             theType = line;
             theSources.clear();
         }
     }
     // store the tail
-    CommitAndReset(&retval, theType, &theFile);
-    return retval;
+    CommitAndReset(&ret_val, theType, &theFile);
+    return ret_val;
 }
 
 string Config_::Namer_::operator()(const Info_& info) const {
