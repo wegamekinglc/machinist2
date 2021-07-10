@@ -143,7 +143,7 @@ namespace {
             return retval.release();
         }
     };
-    static const ParseRecipe_ TheParser;
+    const ParseRecipe_ TheParser;
 
     string NoUnderscores(const Info_& src) {
         string retval(src.content_);
@@ -209,5 +209,6 @@ namespace {
             return retval;
         }
     };
-    static MakeRecipeEmitter_ TheEmitter_;
+
+    const MakeRecipeEmitter_ TheEmitter_;
 } // namespace

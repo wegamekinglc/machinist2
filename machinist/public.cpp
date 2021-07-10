@@ -305,7 +305,7 @@ namespace {
             return retval.release();
         }
     };
-    static ParsePublic_ TheParser;
+    const ParsePublic_ TheParser;
 
     // Now for the outputs
     // here are all the basic types
@@ -823,5 +823,5 @@ namespace {
             return retval;
         }
     };
-    static MakePublicEmitter_ TheEmitter_;
+    const MakePublicEmitter_ TheEmitter_;
 } // namespace

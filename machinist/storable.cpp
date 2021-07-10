@@ -40,7 +40,7 @@ namespace {
             return Info::Parse(SETTINGS, info_name, content);
         }
     };
-    static const ParseStorable_ TheParser;
+    const ParseStorable_ TheParser;
 
     //--------------------------------------------------------------------------
 
@@ -62,5 +62,5 @@ namespace {
             return retval;
         }
     };
-    static MakeStorableEmitter_ TheEmitter_;
+    const MakeStorableEmitter_ TheEmitter_;
 } // namespace

@@ -193,12 +193,12 @@ namespace {
             return retval.release();
         }
     };
-    static const ParseObject_ TheParser(OBJECT, vector<string>());
-    static const ParseObject_
+    const ParseObject_ TheParser(OBJECT, vector<string>());
+    const ParseObject_
         TheSettingsParser(SETTINGS, {IS_SETTINGS}); // "settings" is a synonym for "object" with is_settings set
-    static const ParseObject_
+    const ParseObject_
         TheStorableParser(STORABLE, {IS_STORABLE}); // "storable" is a synonym for "object" with is_storable set
-    static const ParseObject_ TheRecordParser(RECORD,
+    const ParseObject_ TheRecordParser(RECORD,
                                               {IS_RECORD}); // "record" is a synonym for "object" with is_record set
 
     // Now for the outputs
@@ -512,5 +512,5 @@ namespace {
             return retval;
         }
     };
-    static MakeObjectEmitter_ TheEmitter_;
+    const MakeObjectEmitter_ TheEmitter_;
 } // namespace

@@ -27,7 +27,7 @@ namespace {
             return retval.release();
         }
     };
-    static ParseDir_ TheParser;
+    const ParseDir_ TheParser;
 
     // Now for the outputs
 
@@ -44,5 +44,5 @@ namespace {
             return retval;
         }
     };
-    static MakeDirEmitter_ TheEmitter_;
+    const MakeDirEmitter_ TheEmitter_;
 } // namespace

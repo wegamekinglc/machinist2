@@ -96,7 +96,7 @@ namespace {
         }
     };
 
-    static ParsePattern_ TheParser;
+    const ParsePattern_ TheParser;
 
     enum { NUMBER = 0, INTEGER, STRING, DATE, NUM_TYPES };
 
@@ -149,5 +149,5 @@ namespace {
         }
     };
 
-    static MakePatternEmitter_ TheEmitter_;
+    const MakePatternEmitter_ TheEmitter_;
 } // namespace

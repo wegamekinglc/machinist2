@@ -146,7 +146,7 @@ namespace {
             return retval.release();
         }
     };
-    static const ParseEnumeration_ TheParser;
+    const ParseEnumeration_ TheParser;
 
     string MaxNumericSentinel(const Info_& src) {
         int max = -1;
@@ -194,5 +194,5 @@ namespace {
             return retval;
         }
     };
-    static MakeEnumerationEmitter_ TheEmitter_;
+    const MakeEnumerationEmitter_ TheEmitter_;
 } // namespace
