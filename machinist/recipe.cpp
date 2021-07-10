@@ -8,8 +8,9 @@
 #include "parseutils.hpp"
 #include "template.hpp"
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
+#include <filesystem>
 using namespace ParseUtils;
 using namespace std;
 
@@ -196,7 +197,8 @@ namespace {
             // start with the library
             vector<string> tLines(lib);
             // add the template
-            File::Read(path + "Recipe.mgt", &tLines);
+            std::filesystem::path pl(path);
+            File::Read(pl / "Recipe.mgt", &tLines);
             auto retval = Template::Parse(tLines);
             // now add C++ functions
             retval.ofInfo_["TexSafeLC1"].reset(EmitUnassisted(TexSafeLC1));

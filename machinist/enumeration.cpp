@@ -9,6 +9,7 @@
 #include "template.hpp"
 #include <algorithm>
 #include <iostream>
+#include <filesystem>
 using namespace ParseUtils;
 using Info::MakeLeaf;
 
@@ -181,7 +182,8 @@ namespace {
             // start with the library
             vector<string> tLines(lib);
             // add the template
-            File::Read(path + "Enumeration.mgt", &tLines);
+            std::filesystem::path pl(path);
+            File::Read(pl / "Enumeration.mgt", &tLines);
             auto retval = Template::Parse(tLines);
             // now add C++ functions
             retval.ofInfo_["MaxNumericSentinel"].reset(EmitUnassisted(MaxNumericSentinel));

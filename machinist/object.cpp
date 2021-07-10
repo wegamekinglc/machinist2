@@ -7,6 +7,7 @@
 #include "info.hpp"
 #include "parseutils.hpp"
 #include "template.hpp"
+#include <filesystem>
 
 using namespace ParseUtils;
 using std::pair;
@@ -488,7 +489,8 @@ namespace {
             // start with the library
             vector<string> tLines(lib);
             // add the template
-            File::Read(path + "Object.mgt", &tLines);
+            std::filesystem::path pl(path);
+            File::Read(pl / "Object.mgt", &tLines);
             auto retval = Template::Parse(tLines);
             // now add C++ functions
             retval.ofInfo_["CType"].reset(EmitUnassisted(CType));

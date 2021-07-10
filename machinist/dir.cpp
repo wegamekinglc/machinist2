@@ -7,6 +7,7 @@
 #include "info.hpp"
 #include "parseutils.hpp"
 #include "template.hpp"
+#include <filesystem>
 
 using namespace ParseUtils;
 
@@ -36,7 +37,8 @@ namespace {
             // start with the library
             vector<string> tLines(lib);
             // add the template
-            File::Read(path + "Dir.mgt", &tLines);
+            std::filesystem::path pl(path);
+            File::Read(pl / "Dir.mgt", &tLines);
             auto retval = Template::Parse(tLines);
 
             return retval;

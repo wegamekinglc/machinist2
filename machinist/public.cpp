@@ -9,6 +9,7 @@
 #include "template.hpp"
 #include <algorithm>
 #include <iostream>
+#include <filesystem>
 
 using namespace ParseUtils;
 using std::pair;
@@ -789,7 +790,8 @@ namespace {
             // start with the library
             vector<string> tLines(lib);
             // add the template
-            File::Read(path + "Public.mgt", &tLines);
+            std::filesystem::path pl(path);
+            File::Read(pl / "Public.mgt", &tLines);
             auto retval = Template::Parse(tLines);
             // now add C++ functions
             retval.ofInfo_["CType"].reset(EmitUnassisted(CType));
