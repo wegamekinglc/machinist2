@@ -183,7 +183,7 @@ namespace {
             vector<string> tLines(lib);
             // add the template
             std::filesystem::path pl(path);
-            File::Read(pl / "Enumeration.mgt", &tLines);
+            File::Read((pl / "Enumeration.mgt").string(), &tLines);
             auto retval = Template::Parse(tLines);
             // now add C++ functions
             retval.ofInfo_["MaxNumericSentinel"].reset(EmitUnassisted(MaxNumericSentinel));

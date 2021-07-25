@@ -490,7 +490,7 @@ namespace {
             vector<string> tLines(lib);
             // add the template
             std::filesystem::path pl(path);
-            File::Read(pl / "Object.mgt", &tLines);
+            File::Read((pl / "Object.mgt").string(), &tLines);
             auto retval = Template::Parse(tLines);
             // now add C++ functions
             retval.ofInfo_["CType"].reset(EmitUnassisted(CType));
