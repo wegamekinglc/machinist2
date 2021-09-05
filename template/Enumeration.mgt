@@ -32,7 +32,7 @@ class %ExportClass() %_()_
 public:
     explicit %_()_(const String_& src);
     const char* String() const;
-%*[switchable]{   Value_ Switch() const {return val_;}
+%*[switchable]{    Value_ Switch() const {return val_;}
 }`
 %?{%*[method]{1}}{	// idiosyncratic (hand-written) members:
 }`
