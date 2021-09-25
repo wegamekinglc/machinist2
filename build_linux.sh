@@ -12,4 +12,9 @@ mkdir build
   make -j${num_cores}
   make install
 )
+
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
 echo "Finished building of Machinist"
