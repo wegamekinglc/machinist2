@@ -126,7 +126,7 @@ void %_()RegisterExtension
      const Handle_<%_()_::Extension_>& imp) 
 {
     REQUIRE(The_%_()List().empty(), "Can't register a new %_() after enumerating all values");
-    assert(!imp.Empty());
+    assert(!imp.IsEmpty());
     %_()MustFail(imp->String());
     for (auto pn = names.begin(); pn != names.end(); ++pn)
     {
