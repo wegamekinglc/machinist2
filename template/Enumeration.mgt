@@ -66,7 +66,7 @@ public:
     public:
         virtual ~Extension_();
         // Must implement %_(..)_ interface
-	    virtual const char* String() const = 0;
+        virtual const char* String() const = 0;
 %DeclareMethodsOverride(..)`
     };
 private:
@@ -77,7 +77,7 @@ private:
         REQUIRE(val < Value_::_EXTENSION, "val is not valid");
     }
     %_()_(const Handle_<Extension_>& imp) : val_(Value_::_EXTENSION), other_(imp) {assert(imp.get());}
-	friend void %_()_RejectDuplicate(const String_&);
+    friend void %_()_RejectDuplicate(const String_&);
 %:NonExtensibleMembers:
     %_()_(Value_ val) : val_(val) {
         REQUIRE(val < Value_::_N_VALUES, "val is not valid");
@@ -113,10 +113,10 @@ const char* %_()_::String() const {
         return 0;
     %*[default]{case Value_::%_():
         return %"();
-	}`
+    }`
     %*[alternative]{case Value_::%_():
         return %"();
-	}`
+    }`
     %?{%IsExtensible()}{case Value_::_EXTENSION:
         return other_->String();}
     }`
@@ -150,10 +150,10 @@ struct ReadString%_()_
 %?{%IsExtensible()}{void %_()_RejectDuplicate(const String_& test)	// check added extensions to ensure they are not already used
 {
     static const ReadString%_()_ READ_FIXED;    // allows precomputation for speed, in constructor
-	%_()_::Value_ val;
-	NOTICE(test);
-	REQUIRE(!READ_FIXED(test, &val), "Attempt to change meaning of fixed %_() string");
-	REQUIRE(!The%_()Extensions().count(String::Condensed(test)), "Attempt to change meaning of %_() string");
+    %_()_::Value_ val;
+    NOTICE(test);
+    REQUIRE(!READ_FIXED(test, &val), "Attempt to change meaning of fixed %_() string");
+    REQUIRE(!The%_()Extensions().count(String::Condensed(test)), "Attempt to change meaning of %_() string");
 }
 }`
 
@@ -197,7 +197,7 @@ Vector_<%_()_> %_()ListAll()
             retval.emplace_back(b);
 }}{%*[alternative]{		retval.emplace_back(%"());
 }}`
-		for (const auto& r : retval)
+        for (const auto& r : retval)
             exists.insert(r.String());
         auto more = The%_()Extensions();
         for (auto e : more)
@@ -231,7 +231,7 @@ Vector_<%_()> %_()ListAll()
 %:ConstructDefault:*val = %*[alternative]{%?{%_(default)}{%_(..)_::Value_::%_();}}`
 %:ConstructAlternative:
 %*[alias]{	else if (String::Equivalent(src, "%Condensed()"))
-		*val = %_(/)_::Value_::%_(..);
+        *val = %_(/)_::Value_::%_(..);
 }`
 %:ConstructExtension:`
     else
@@ -242,37 +242,37 @@ Vector_<%_()> %_()ListAll()
         {
             val_ = Value_::_EXTENSION;
             other_ = pe->second;
-			   return;
+               return;
         }
     }
 
 %:LegacyHeader:
 namespace NBiz
 {
-	class %ExportClass() C%_() : pu	blic NCore::CEnumeration  
-	{
-	public:
-		//	CEnumeration data
-		CORE_DECLARE_ENUMERATION_ENUM(C%_()) 
-		{
+    class %ExportClass() C%_() : pu	blic NCore::CEnumeration
+    {
+    public:
+        //	CEnumeration data
+        CORE_DECLARE_ENUMERATION_ENUM(C%_())
+        {
 %*[alternative]{%?{%*[numeric]{1}}{			%_(../legacy)%_() = %_(numeric),		` emit all numeric values before any others
 }}`
 %?{%MaxNumericSentinel()}{ }` evaluated for side effect (sets counter)
 %*[alternative]{%~{%*[numeric]{1}}{			%_(../legacy)%_() = %#(),
 }}`
-			%_(legacy)Unknown = -1
-		};
+            %_(legacy)Unknown = -1
+        };
 
-		CORE_DECLARE_ENUMERATION(C%_());
+        CORE_DECLARE_ENUMERATION(C%_());
 
-		//Serializable Implementation
-		CORE_DECLARE_SERIALIZABLE();
-		// interoperation with %_()_
-		operator %_()_() const;
-		C%_()(const %_()_& src);
+        //Serializable Implementation
+        CORE_DECLARE_SERIALIZABLE();
+        // interoperation with %_()_
+        operator %_()_() const;
+        C%_()(const %_()_& src);
 
 %DeclareMethods()`
-	};
+    };
 }	// leave NBiz
 
 %:DeclareMethods:%*[method]{		%_()
@@ -285,7 +285,7 @@ namespace %CatchallNamespace()
 CORE_BEGIN_ENUMERATION_VALUES(C%_())
 %*[alternative]{	CORE_ENUMERATION_VALUE(C%_(..)::%_(../legacy)%_(), "%LegacyShortname()", "%LegacyLongname()");
 }`
-	CORE_ENUMERATION_VALUE(C%_()::%_(legacy)Unknown, "?", "Unknown");
+    CORE_ENUMERATION_VALUE(C%_()::%_(legacy)Unknown, "?", "Unknown");
 CORE_END_ENUMERATION_VALUES()
 
 CORE_DEFINE_ENUMERATION(C%_());
@@ -300,26 +300,26 @@ CORE_SERIALIZABLE_END()
 // interoperation
 C%_()::operator %_()_() const
 {
-	switch (Switch())
-	{
+    switch (Switch())
+    {
 %*[alternative]{	case %_(../legacy)%_():
-		return %_(..)_::%_();
+        return %_(..)_::%_();
 }`
-	}
-	// unrecognized, or Unknown
-	return %_()_::_NOT_SET;
+    }
+    // unrecognized, or Unknown
+    return %_()_::_NOT_SET;
 }
 
 C%_()::C%_()(const %_()_& src)
 {
-	SetValue(%_(legacy)Unknown);
-	switch (src.Switch())
-	{
+    SetValue(%_(legacy)Unknown);
+    switch (src.Switch())
+    {
 %*[alternative]{	case %_(..)_::%_():
-		SetValue(%_(../legacy)%_());
-		break;
+        SetValue(%_(../legacy)%_());
+        break;
 }`
-	}
+    }
 }
 }	// leave %CatchallNamespace()
 `
@@ -328,12 +328,12 @@ package types;
 
 public class %_()
 {
-	public enum Value
-	{
+    public enum Value
+    {
 %*[alternative],
 {		%Condensed()},
-		N_VALUES
-	}
+        N_VALUES
+    }
 }
 `
 %:HasDefault:%*[alternative]{%?{%_(default)}{1}}

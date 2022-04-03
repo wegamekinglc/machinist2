@@ -12,35 +12,35 @@ class Storable_;
 %?{%_(is_settings)%_(is_record)}{`
 struct %ExportClass() %_()_ %~{%HasHandle()}{: StoreAsDictionary_<%_()_>}
 {`
-	%*[member]{%DataMember()}
+        %*[member]{%DataMember()}
 %~{%HasHandle()}{`
-	%_()_(const Dictionary_& src);
-	%_()_(const Dictionary_& src, const std::map<String_, Handle_<Storable_>>&) : %_()_(src) {}
-	Dictionary_ Data() const;
+        %_()_(const Dictionary_& src);
+        %_()_(const Dictionary_& src, const std::map<String_, Handle_<Storable_>>&) : %_()_(src) {}
+        Dictionary_ Data() const;
 %?{%_(is_record)}{`
-	static Vector_<String_> VectorLabels();
-	Vector_<Cell_> VectorContents() const;
+        static Vector_<String_> VectorLabels();
+        Vector_<Cell_> VectorContents() const;
 }}`
 %?{%HasHandle()}{`
-	%_()_(const Dictionary_& atoms, const std::map<String_, Handle_<Storable_>>& objects);
+        %_()_(const Dictionary_& atoms, const std::map<String_, Handle_<Storable_>>& objects);
 }`
 %?{%_(is_record)}{`
-	%_()_() {}
-	%_()_(_ENV, const UIRow_& src);
-	%_()_(%*[member],{%MemberWithType()}) 
-		: 
-	%*[member],{%InitializeMemberInInitList()} 
-	{	} 
+        %_()_() {}
+        %_()_(_ENV, const UIRow_& src);
+        %_()_(%*[member],{%MemberWithType()})
+                :
+        %*[member],{%InitializeMemberInInitList()}
+        {	}
 
-	%_()_& operator=(const %_()_ & rhs);
+        %_()_& operator=(const %_()_ & rhs);
 }`
 };}` end is_settings|is_record
 %:DataMember:
-	%CType() %_()_;`
+        %CType() %_()_;`
 %:C++Source:
 %~{%HasHandle()}{%?{%_(is_settings)}{
 %_()_::%_()_(const Dictionary_& src)
-	:`
+        :`
 %*[member], {%InitializeMember()}
 {`
 %*[condition]{%EnforceCondition()}	
@@ -48,29 +48,29 @@ struct %ExportClass() %_()_ %~{%HasHandle()}{: StoreAsDictionary_<%_()_>}
 `
 Dictionary_ %_()_::Data() const
 {
-	Dictionary_ retval;`
-	%*[member]{%InsertMember()}
-	return retval;
+        Dictionary_ retval;`
+        %*[member]{%InsertMember()}
+        return retval;
 }}` end is_settings
 %?{%_(is_record)}{
 Vector_<String_> %_()_::VectorLabels()
 {
-	static const Vector_<String_> RETVAL({%*[member], {%"()}});
-	return RETVAL;
+        static const Vector_<String_> RETVAL({%*[member], {%"()}});
+        return RETVAL;
 }
 
 Vector_<Cell_> %_()_::VectorContents() const
 {
-	Vector_<Cell_> retval;
+        Vector_<Cell_> retval;
 %*[member]{	retval.push_back(%Inserter()(%_()_%DotValue()));
 }`
-	return retval;
+        return retval;
 }
 }}` end of %~{%HasHandle()}
 %?{%_(is_settings)}{`
 %?{%HasHandle()}{
 %_()_::%_()_(const Dictionary_& atoms, const std::map<String_, Handle_<Storable_>>& handles)
-	:`
+        :`
 %*[member], {%|{%?{%IsHandle()}{%InitializeHandle()}}{%/src/atoms/<%InitializeMember()>}}
 {`
 %*[condition]{%EnforceCondition()}	
@@ -79,7 +79,7 @@ Vector_<Cell_> %_()_::VectorContents() const
 `
 %?{%_(is_record)}{`
 %_()_::%_()_(_ENV, const UIRow_& src)
-	:%#0()`	
+        :%#0()`
 %*[member], {%InitializeMemberFromRow()}
 {`
 %*[condition]{%EnforceCondition()}	
@@ -94,7 +94,7 @@ Vector_<Cell_> %_()_::VectorContents() const
 %?{%_(is_storable)}{%?{%_(is_record)}{
 void %_()_::Write(Archive::Store_& dst) const
 {
-	%_()%?{%_(version)}{_v%_(version)}::XWrite(dst%*[member]{, %_()_});
+        %_()%?{%_(version)}{_v%_(version)}::XWrite(dst%*[member]{, %_()_});
 }
 }}` end of is_storable&is_record
 ` end of C++Source
@@ -111,10 +111,10 @@ void %_()_::Write(Archive::Store_& dst) const
 %:MemberWithType:`
 %CType() %_()`
 %:EnforceCondition:
-	REQUIRE(%_(), %|{%*[help]{%"()}}{"Validation failed: " %"()});` emit stringified condition if help is not available
+        REQUIRE(%_(), %|{%*[help]{%"()}}{"Validation failed: " %"()});` emit stringified condition if help is not available
 %:InsertMember:
-	%~{%MustExist()}{if (%ExistenceTest())
-		}`
+        %~{%MustExist()}{if (%ExistenceTest())
+                }`
 retval.Insert("%Condensed()", %Inserter()(%_()_%DotValue()));`
 `
 %:JavaRecord:%?{%_(is_record)}{`
@@ -188,7 +188,7 @@ namespace %FullType()
 %:MDominant:%|{%*[multiple]{Multiple}}{%*[optional]{Optional}}`	writes 'Multiple' for any multiple, 'Optional' only for non-multiple optionals
 %:WriteChild:Set%MDominant()(dst, %"(), %_()%?{%IsSettings()}{.Data()}%?{%IsEnum()}{.String()});`
 %:CheckPresence:%?{%_(multiple)}{%~{%_(optional)}{
-			REQUIRE(!%_()_.empty(), "Node '%_()' not found");}}`
+                        REQUIRE(!%_()_.empty(), "Node '%_()' not found");}}`
 %:GetChild:Get%MDominant()(src, %"(), &%_()_, %CoerceFromView());`
 %CheckPresence()`
 %:FullType:%_()%?{%_(version)}{_v%_(version)}`

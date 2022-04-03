@@ -1,9 +1,9 @@
 %:CWrite:
 void XSave_%_()_v%_(version)
-	(Archive::Store_& dst%*[member]{, const %QuantifiedCType()& %_()})
+    (Archive::Store_& dst%*[member]{, const %QuantifiedCType()& %_()})
 {
-	using namespace Archive::Utils;
-	dst.SetType("%FullType()");
+    using namespace Archive::Utils;
+    dst.SetType("%FullType()");
 %*[member]{	%WriteChild()
 }
 }
@@ -12,7 +12,7 @@ void XSave_%_()_v%_(version)
 %:MDominant:%?{%_(multiple)}{Multiple}%~{%_(multiple)}{%?{%_(optional)}{Optional}}`	writes 'Multiple' for any multiple, 'Optional' only for non-multiple optionals
 %:WriteChild:Set%MDominant()(dst, %"(), %_());`
 %:CheckPresence:%?{%_(multiple)}{%~{%_(optional)}{
-			REQUIRE(!%_()_.empty(), "Node '%_()' not found");}}`
+            REQUIRE(!%_()_.empty(), "Node '%_()' not found");}}`
 %:GetChild:Get%MDominant()(src, %"(), &%_()_, %CoerceFromView());`
 %CheckPresence()`
 %:FullType:%_()%?{%_(version)}{_v%_(version)}`

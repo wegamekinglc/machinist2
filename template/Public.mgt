@@ -1,59 +1,59 @@
 %:ExcelSource:
 %~{%_(suppress/excel)}{
 extern "C" __declspec(dllexport) OPER_* xl_%_()
-	(%*[input], {const OPER_* xl_%_()}%?{%MultipleOutputs()}{, const OPER_* format})	`this will break if a function has multiple outputs and no inputs, O well
+    (%*[input], {const OPER_* xl_%_()}%?{%MultipleOutputs()}{, const OPER_* format})	`this will break if a function has multiple outputs and no inputs, O well
 
 {
-	Excel::InitializeSessionIfNeeded();
+    Excel::InitializeSessionIfNeeded();
 %SeedEnv()`
-	const char* argName = 0;
-	try
-	{%#0()%?{%#()}{}	`start counting args from 1
-		
-		Log::Write(%"());`
-		%*[input]{%ExcelTranslateInput()}
-		argName = 0;`
+    const char* argName = 0;
+    try
+    {%#0()%?{%#()}{}	`start counting args from 1
+
+        Log::Write(%"());`
+        %*[input]{%ExcelTranslateInput()}
+        argName = 0;`
 %*[condition]
 {		%EnforceCondition()}
 %*[output]
 {		%DeclareOutput()}
-		%CallInternal()
-		Excel::Retval_ retval;
-		%*[output]{retval.Load(%HandleEnv()%_());
-		}` this is the close brace for the loop over outputs, doesn't show up in the generated code
+        %CallInternal()
+        Excel::Retval_ retval;
+        %*[output]{retval.Load(%HandleEnv()%_());
+        }` this is the close brace for the loop over outputs, doesn't show up in the generated code
 return retval.ToXloper(%?{%MultipleOutputs()}{Excel::ToString(format, true)});
-	}
-	catch (std::exception& e)
-	{
-		return Excel::Error(e.what(), argName);
-	}
-	catch (...)
-	{
-		return Excel::Error("Unknown error", argName);
-	}
+    }
+    catch (std::exception& e)
+    {
+        return Excel::Error(e.what(), argName);
+    }
+    catch (...)
+    {
+        return Excel::Error("Unknown error", argName);
+    }
 }
 
 struct XlRegister_%_()_
 {
-	XlRegister_%_()_()
-	{
-		Vector_<String_> argHelp;`
-		%*[input]{%AddArgHelp()}
-		Excel::Register("%DLLBaseName()", "xl_%_()", "%ExcelName()", %*[help]{%"()}, "%ExcelArgTypes()", "%ExcelArgNames()", argHelp, %IsVolatile()%*[category]{, %"()});
-	}
+    XlRegister_%_()_()
+    {
+        Vector_<String_> argHelp;`
+        %*[input]{%AddArgHelp()}
+        Excel::Register("%DLLBaseName()", "xl_%_()", "%ExcelName()", %*[help]{%"()}, "%ExcelArgTypes()", "%ExcelArgNames()", argHelp, %IsVolatile()%*[category]{, %"()});
+    }
 };
 static XlRegister_%_()_ The_%_()_XlRegisterer;
 }` endif not suppress/excel
 %:ExcelTranslateInput:
-		argName = "%_() (input #%#())";
-		const %CType() %_(myname) = Excel::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(%HandleEnv()xl_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true}%?{%_(greedy)}{%~{%IsOptional()}{, false}, true})%*[default]{.get_value_or(%PassDefault())};`
+        argName = "%_() (input #%#())";
+        const %CType() %_(myname) = Excel::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(%HandleEnv()xl_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true}%?{%_(greedy)}{%~{%IsOptional()}{, false}, true})%*[default]{.get_value_or(%PassDefault())};`
 %*[insert]{
-		%_()}`
+        %_()}`
 %*[condition]{
       REQUIRE(%WithParentName(), %"<%|{%*[help]{%WithGrandparentName()}}{Validation failed:  %WithParentName()}>);}`
 %:DeclareOutput:%CType() %_();`
 %:DeclareOutputMember:
-		%CType() %_()_;`
+        %CType() %_()_;`
 %:CallInternal:%_()(%*[input], {%_(myname)}%?{%HasAnInput()}{, }%*[output], {&%_()});`
 %:ExcelArgTypes:Q%*[input]{Q}%?{%MultipleOutputs()}{Q}%~{%_()}^Repository{!}`	everything is a Q-type (XLOPER12); Repository functions are volatile
 %:ExcelArgNames:%*[input],{%?{%_(optional)}{[}%_()%?{%_(optional)}{]}}%?{%MultipleOutputs()}{,format}`
@@ -62,7 +62,7 @@ static XlRegister_%_()_ The_%_()_XlRegisterer;
 %:HandleEnv:%~{%_(type)}handle{%PassEnv()}%~{%_(type)}record{%PassEnv()}`
 %:HasHelp:%*[help]{1}`
 %:AddArgHelp:
-		argHelp.push_back(%*[help]{%"()});`
+        argHelp.push_back(%*[help]{%"()});`
 %:EnforceCondition:`
 REQUIRE(%_(), %|{%*[help]{%"()}}{"Validation failed: " %"()});` emit stringified condition if help is not available
 %:PassDefault:%|{%?{%_(../subtype)}{%_(../subtype)_(%_())}}{%_()}`
@@ -73,49 +73,49 @@ REQUIRE(%_(), %|{%*[help]{%"()}}{"Validation failed: " %"()});` emit stringified
 %~{%_(suppress/python)}{
 extern "C" __declspec(dllexport) PyObject* py_%_()(PyObject* self, PyObject* positional, PyObject* named)
 {
-	const char* argName = 0;
-	try
-	{
-		Log::Write(%"());
-		scoped_ptr<Python::ArgReader_> pyReader(Python::NewArgReader(positional, named));	// will vend args in sequence
-		%*[input]{%PythonTranslateInput()}
-		argName = 0;`
+    const char* argName = 0;
+    try
+    {
+        Log::Write(%"());
+        scoped_ptr<Python::ArgReader_> pyReader(Python::NewArgReader(positional, named));	// will vend args in sequence
+        %*[input]{%PythonTranslateInput()}
+        argName = 0;`
 %*[condition]
 {		%EnforceCondition()}
 %*[output]
 {		%DeclareOutput()}
-		%CallInternal()
-		scoped_ptr<Python::Retval_> retval(Python::NewRetval());
-		%*[output]{retval->Append(%_());
-		}` this is the close brace for the loop over outputs, doesn't show up in the generated code
+        %CallInternal()
+        scoped_ptr<Python::Retval_> retval(Python::NewRetval());
+        %*[output]{retval->Append(%_());
+        }` this is the close brace for the loop over outputs, doesn't show up in the generated code
 return retval->Release();
-	}
-	catch (std::exception& e)
-	{
-		return Python::Error(e.what(), argName);
-	}
-	catch (...)
-	{
-		return Python::Error("Unknown error", argName);
-	}
+    }
+    catch (std::exception& e)
+    {
+        return Python::Error(e.what(), argName);
+    }
+    catch (...)
+    {
+        return Python::Error("Unknown error", argName);
+    }
 }
 
 struct PyRegister_%_()_
 {
-	PyRegister_%_()_()
-	{
-		Vector_<String_> argHelp;`
-		%*[input]{%AddArgHelp()}
-		Python::Register(py_%_(), "%PythonName()", %*[help]{%"()}, "%ExcelArgNames()", argHelp);
-	}
+    PyRegister_%_()_()
+    {
+        Vector_<String_> argHelp;`
+        %*[input]{%AddArgHelp()}
+        Python::Register(py_%_(), "%PythonName()", %*[help]{%"()}, "%ExcelArgNames()", argHelp);
+    }
 };
 static PyRegister_%_()_ The_%_()_PyRegisterer;
 }` endif not suppress/python
 %:PythonTranslateInput:
-		argName = "%_()";
-		const %CType() %_(myname) = Python::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(pyReader->Next(argName)%*[intype]{, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%PassDefault())};`
+        argName = "%_()";
+        const %CType() %_(myname) = Python::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(pyReader->Next(argName)%*[intype]{, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%PassDefault())};`
 %*[insert]{
-		%_()}`
+        %_()}`
 `
 `
 
@@ -124,92 +124,92 @@ static PyRegister_%_()_ The_%_()_PyRegisterer;
 
 namespace
 {
-	void %_()_Checked
-		(%*[input], 
-		 {const %CType()& %_(myname)}%?{%HasAnInput()}{, 
+    void %_()_Checked
+        (%*[input],
+         {const %CType()& %_(myname)}%?{%HasAnInput()}{,
 }`
-		 %*[output],
-		 {%CppOutType() %_()})
-	{`
+         %*[output],
+         {%CppOutType() %_()})
+    {`
 %*[input]{%*[insert]{
-		%_()}}`
+        %_()}}`
 %*[condition]
 {		%EnforceCondition()}
-		%CallInternal()
-	}
+        %CallInternal()
+    }
 }	// leave local
 
 %ExportFunc() ProDirect::%CppName()_Out_ ProDirect::%CppName()
-	(%*[input], 
-	 {%CppInType() %_()})
+    (%*[input],
+     {%CppInType() %_()})
 {
-	// Excel::InitializeSessionIfNeeded();	-- presently assuming C++ users do this for themselves
-	try
-	{
-		%CppName()_Out_ retval;
-		%_()_Checked(%*[input], {%CppPassArg()}%?{%HasAnInput()}{, }%*[output], {%~{%_(type)}handle{%?{%_(subtype)}{ReceiveHandle_<%_(subtype)_>(}}&retval.%_()_%~{%_(type)}handle{%?{%_(subtype)}{)}}});
-		return retval;
-	}
-	catch (std::exception&)
-	{
-		throw;
-	}
-	catch (...)
-	{
-		throw ProBase::Exception_("Unknown error");
-	}
+    // Excel::InitializeSessionIfNeeded();	-- presently assuming C++ users do this for themselves
+    try
+    {
+        %CppName()_Out_ retval;
+        %_()_Checked(%*[input], {%CppPassArg()}%?{%HasAnInput()}{, }%*[output], {%~{%_(type)}handle{%?{%_(subtype)}{ReceiveHandle_<%_(subtype)_>(}}&retval.%_()_%~{%_(type)}handle{%?{%_(subtype)}{)}}});
+        return retval;
+    }
+    catch (std::exception&)
+    {
+        throw;
+    }
+    catch (...)
+    {
+        throw ProBase::Exception_("Unknown error");
+    }
 }
 
 %:CppHeader:
 namespace ProDirect
 {
-	struct %CppName()_Out_
-	{
+    struct %CppName()_Out_
+    {
 %*[output]{		%CBaseType() %_()_;
 }`
-	};
+    };
 
-	%ExportFunc() %CppName()_Out_ %CppName()
-		(%*[input],
-		 {%CppInType() %_()%?{%_(optional)}{%|{%*[default]{ = %_()}}{ = 0}}`
+    %ExportFunc() %CppName()_Out_ %CppName()
+        (%*[input],
+         {%CppInType() %_()%?{%_(optional)}{%|{%*[default]{ = %_()}}{ = 0}}`
 );
 }
 `
 %:DotNetDeclareInput:`
 %DotNetType() dn_%_()`
 %:DotNetDeclareOutput:
-		%DotNetType() %_()_;
+        %DotNetType() %_()_;
 %:DotNetTranslateInput:
-		argName = "%_()";
-		const %CType() %_() = DotNet::%CTypeTranslator()(dn_%_()%?{%IsOptional()}{, true});`
+        argName = "%_()";
+        const %CType() %_() = DotNet::%CTypeTranslator()(dn_%_()%?{%IsOptional()}{, true});`
 %:DotNetSource:
 %~{%_(suppress/dotnet)}{
 #pragma managed
 #include "MG_%_().h"
 
 TALibNet::%_()_Return_^ TALibNet::%_()_::Run
-	(%*[input], {%DotNetDeclareInput()})
+    (%*[input], {%DotNetDeclareInput()})
 {
-	%_()_Return_^ retval = gcnew %_()_Return_;
-	const char* argName = 0;
-	try
-	{`
-		%*[input]{%DotNetTranslateInput()}
-		argName = 0;`
+    %_()_Return_^ retval = gcnew %_()_Return_;
+    const char* argName = 0;
+    try
+    {`
+        %*[input]{%DotNetTranslateInput()}
+        argName = 0;`
 %*[condition]
 {		%EnforceCondition()}
 %*[output]
 {		%DeclareOutput()}
-		::%CallInternal()
-		%*[output]{retval->%_()_ = DotNet::CopyOut(%_());
-		}
-		return retval;
-	}
-	catch (std::exception& e)
-	{
-		retval->error_ = DotNet::Error(e.what(), argName);
-		return retval;
-	}
+        ::%CallInternal()
+        %*[output]{retval->%_()_ = DotNet::CopyOut(%_());
+        }
+        return retval;
+    }
+    catch (std::exception& e)
+    {
+        retval->error_ = DotNet::Error(e.what(), argName);
+        return retval;
+    }
 }
 }
 %:DotNetHeader:
@@ -217,18 +217,18 @@ TALibNet::%_()_Return_^ TALibNet::%_()_::Run
 
 namespace TALibNet
 {
-	public ref struct %_()_Return_
-	{
-		System::String^ error_;`
-		%*[output]{%DotNetDeclareOutput()}`
-	};
+    public ref struct %_()_Return_
+    {
+        System::String^ error_;`
+        %*[output]{%DotNetDeclareOutput()}`
+    };
 
-	public ref class %_()_
-	{
-	public:
-		static initonly %_()_^ Instance = gcnew %_()_;
-		%_()_Return_^ Run(%*[input], {%DotNetDeclareInput()});
-	};
+    public ref class %_()_
+    {
+    public:
+        static initonly %_()_^ Instance = gcnew %_()_;
+        %_()_Return_^ Run(%*[input], {%DotNetDeclareInput()});
+    };
 }
 }
 
@@ -308,88 +308,88 @@ namespace TALibNet
 
 %:JNI_Native:%~{%_(suppress/java)}{
 JNIEXPORT jobject JNICALL Java_%/\./_/<%JClass()>_native%_()
-	(JNIEnv* jenv, jobject obj%*[input]{, %JNI_DeclareInput()})
+    (JNIEnv* jenv, jobject obj%*[input]{, %JNI_DeclareInput()})
 {
-	const char* argName = nullptr;
-	try
-	{
+    const char* argName = nullptr;
+    try
+    {
 %#0()%?{%#()}{}`start counting args from 1
 %*[input]
 {%JNI_TranslateInput()}
-		argName = nullptr;
+        argName = nullptr;
 %*[condition]
 {		%EnforceCondition()}
 %*[output]
 {		%DeclareOutput()}
-		%CallInternal()
-		static const jclass THE_CLASS = jenv->FindClass("%JClass()/%_()_Outputs");
-		REQUIRE(THE_CLASS, "Can't find output class");
-		static const jmethodID THE_CONSTRUCTOR = jenv->GetMethodID(THE_CLASS, "<init>", "%JNI_OutputInitSignature()");
-		REQUIRE(THE_CONSTRUCTOR, "Can't find output initializer");
+        %CallInternal()
+        static const jclass THE_CLASS = jenv->FindClass("%JClass()/%_()_Outputs");
+        REQUIRE(THE_CLASS, "Can't find output class");
+        static const jmethodID THE_CONSTRUCTOR = jenv->GetMethodID(THE_CLASS, "<init>", "%JNI_OutputInitSignature()");
+        REQUIRE(THE_CONSTRUCTOR, "Can't find output initializer");
 %*[output]
 {		%JNI_TranslateOutput()}
-		return jenv->NewObject(THE_CLASS, THE_CONSTRUCTOR%*[output]{, %_()_ret});
-	}
-	catch (std::exception& e)
-	{
-		return JNI::Error(jenv, e.what(), argName);
-	}
-	catch (...)
-	{
-		return JNI::Error(jenv, "Unknown error", argName);
-	}
+        return jenv->NewObject(THE_CLASS, THE_CONSTRUCTOR%*[output]{, %_()_ret});
+    }
+    catch (std::exception& e)
+    {
+        return JNI::Error(jenv, e.what(), argName);
+    }
+    catch (...)
+    {
+        return JNI::Error(jenv, "Unknown error", argName);
+    }
 }
 }`end of JNI_Native
 %:JNI_OutputInitSignature:` signature of the constructor of the output object
 (%*[output]{%JNI_SignatureType()})V`
 %:JNI_TranslateInput:`
-		argName = "%_() (input #%#())";
-		const %CType() %_(myname) = JNI::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(jenv, j_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%PassDefault())};`
+        argName = "%_() (input #%#())";
+        const %CType() %_(myname) = JNI::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(jenv, j_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%PassDefault())};`
 %:JNI_DeclareInput:%JNI_NativeType() j_%_()`
 %:JNI_TranslateOutput:auto %_()_ret = JNI::CopyOut(jenv, %_());`
 `
 %:FFIViaCookie:
 extern "C" __declspec(dllexport) double ffi_%_()
-	(%*[input], {%|{%?{%IsCookie()}{int} f_}{%CType() } %_()})
+    (%*[input], {%|{%?{%IsCookie()}{int} f_}{%CType() } %_()})
 {
-	Cookie::Output_ retval;
-	const char* argName = nullptr;
-	try
-	{
-		Cookie::Input_ get;
-		Log::Write(%"());
+    Cookie::Output_ retval;
+    const char* argName = nullptr;
+    try
+    {
+        Cookie::Input_ get;
+        Log::Write(%"());
 %#0()%?{%#()}{}%*[input]{%CookieTranslateInput()}`
-		argName = 0;
+        argName = 0;
 %*[condition]
 {		%EnforceCondition()}
 %*[output]
 {		%DeclareOutput()}
-		%CallInternal()
+        %CallInternal()
 %*[output]{		retval.Append(%_());
-		return retval.Finalize();
-	}
-	catch (std::exception& e)
-	{
-		return retval.Error(e.what(), argName);
-	}
-	catch (...)
-	{
-		return retval.Error("Unknown error", argName);
-	}
+        return retval.Finalize();
+    }
+    catch (std::exception& e)
+    {
+        return retval.Error(e.what(), argName);
+    }
+    catch (...)
+    {
+        return retval.Error("Unknown error", argName);
+    }
 }
 
 %:CookieTranslateInput:%?{%IsCookie()}{`
-		argName = "%_() (input #%#())";
-		const %CType() x = get.%CookiePostfix()(f_x);
+        argName = "%_() (input #%#())";
+        const %CType() x = get.%CookiePostfix()(f_x);
 }`
 %:JuliaDeclareInput:%_() :: %JuliaType()`
 %:JuliaFFIType:%|{%?{%IsCookie()}{Int32}}{%JuliaType()}`
 %:NOutputs:0%*[output]{+1}`%#0()%*[output]{%?{%#()}{}}%#()`
 %:JuliaWrapper:
 function %_()(%*[input], {%JuliaDeclareInput()})
-	biscuit = ccall((:ffi_%_(), DLLPath), Float64, (%*[input], {%JuliaFFIType()})%*[input]{, ToCookie(%_())})
-	CheckBiscuit(biscuit, %NOutputs())
+    biscuit = ccall((:ffi_%_(), DLLPath), Float64, (%*[input], {%JuliaFFIType()})%*[input]{, ToCookie(%_())})
+    CheckBiscuit(biscuit, %NOutputs())
 %#0()%*[output]{	%_() = Out%CookiePostfix()(biscuit, convert(Int32, %#()))
 }`
-	return (%*[output]{%_(),})
+    return (%*[output]{%_(),})
 end

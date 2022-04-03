@@ -8,26 +8,26 @@ class UIRow_;
 
 struct %ExportClass() %_()_ %~{%HasHandle()}{: StoreAsDictionary_<%_()_>}
 {`
-	%*[member]{%DataMember()}
+        %*[member]{%DataMember()}
 %~{%HasHandle()}{	%_()_(const Dictionary_& src);
-	Dictionary_ Data() const;
+        Dictionary_ Data() const;
 }`
 %?{%_(is_record)}{`
-	%_()_(const UIRow_& src);
-	%_()_(%*[member],{%MemberWithType()}) 
-		: 
-	%*[member],{%InitializeMemberInInitList()} 
-	{	} 
+        %_()_(const UIRow_& src);
+        %_()_(%*[member],{%MemberWithType()})
+                :
+        %*[member],{%InitializeMemberInInitList()}
+        {	}
 
-	%_()_& %_()_::operator=(const %_()_ & rhs);
+        %_()_& %_()_::operator=(const %_()_ & rhs);
 }`
 };
 %:DataMember:
-	%CType() %_()_;`
+        %CType() %_()_;`
 %:C++Source:
 %~{%HasHandle()}{
 %_()_::%_()_(const Dictionary_& src)
-	:`
+        :`
 %*[member], {%InitializeMember()}
 {`
 %*[condition]{%EnforceCondition()}	
@@ -35,15 +35,15 @@ struct %ExportClass() %_()_ %~{%HasHandle()}{: StoreAsDictionary_<%_()_>}
 `
 Dictionary_ %_()_::Data() const
 {
-	Dictionary_ retval;`
-	%*[member]{%InsertMember()}
-	return retval;
+        Dictionary_ retval;`
+        %*[member]{%InsertMember()}
+        return retval;
 }
 }
 
 %?{%_(is_record)}{`
 %_()_::%_()_(const UIRow_& src)
-	:%#0()`	
+        :%#0()`
 %*[member], {%InitializeMemberFromRow()}
 {`
 %*[condition]{%EnforceCondition()}	
@@ -65,10 +65,10 @@ Dictionary_ %_()_::Data() const
 %:MemberWithType:`
 %CType() %_()`
 %:EnforceCondition:
-	REQUIRE(%_(), %~{%HasHelp()}{"Validation failed: " %"()}%*[help]{%"()});` emit stringified condition if help is not available
+        REQUIRE(%_(), %~{%HasHelp()}{"Validation failed: " %"()}%*[help]{%"()});` emit stringified condition if help is not available
 %:InsertMember:
-	%~{%MustExist()}{if (%ExistenceTest())
-		}`
+        %~{%MustExist()}{if (%ExistenceTest())
+                }`
 retval.Insert("%Condensed()", %Inserter()(%_()_%DotValue()));`
 %:HasHelp:%*[help]{1}
 `

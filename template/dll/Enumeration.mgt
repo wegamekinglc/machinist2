@@ -9,7 +9,7 @@ class %ExportClass() %_()_
 }`
     enum E%_()
     {
-		%~{%HasDefault()}{_NOT_SET=-1,
+        %~{%HasDefault()}{_NOT_SET=-1,
 }`
 %*[alternative]{%?{%*[numeric]{1}}{		%_() = %_(numeric),		` emit all numeric values before any others
 }}`
@@ -25,19 +25,19 @@ class %ExportClass() %_()_
 %?{%_(switchable)}{private:
 }`
     friend %ExportFunc() bool operator==(const %_()_& lhs, const %_()_& rhs);
-	friend struct ReadString%_()_;
+    friend struct ReadString%_()_;
     friend std::vector<%_()_> %_()ListAll();
-	friend bool operator<(const %_()_& lhs, const %_()_& rhs){return lhs.val_ < rhs.val_;}
+    friend bool operator<(const %_()_& lhs, const %_()_& rhs){return lhs.val_ < rhs.val_;}
 public:
     explicit %_()_(const String_& src);
     const char* String() const;
 %?{%_(switchable)}{	E%_() Switch() const {return val_;}
 }`
     // idiosyncratic (hand-written) members:
-	%*[method]{%_()
-	}
-	%~{%HasDefault()}{%_(/)_():val_(_NOT_SET){};}
-	%*[alternative]{%?{%_(default)}{%_(/)_():val_(%_()){};}}
+    %*[method]{%_()
+    }
+    %~{%HasDefault()}{%_(/)_():val_(_NOT_SET){};}
+    %*[alternative]{%?{%_(default)}{%_(/)_():val_(%_()){};}}
 };
 
 %ExportFunc() bool operator==(const %_()_& lhs, const %_()_& rhs); 
@@ -56,7 +56,7 @@ public:
     public:
         virtual ~Extension_();
         // Implement %_() interface
-		%*[method]{%~{%_()}const;{%MakeVirtual()}}
+        %*[method]{%~{%_()}const;{%MakeVirtual()}}
     };
 %:ExtensibleMembers:
     Handle_<Extension_> other_;
@@ -98,16 +98,16 @@ const char* %_()_::String() const
     switch (val_)
     {
     default:
-	%~{%HasDefault()}{case _NOT_SET:}
+    %~{%HasDefault()}{case _NOT_SET:}
         return 0;
-	%*[default]{case %_():
-		return %"();
-	}`
-	%*[alternative]{case %_():
-		return %"();
-	}`
-	%?{%IsExtensible()}{case _EXTENSION:
-		return other_->String();}
+    %*[default]{case %_():
+        return %"();
+    }`
+    %*[alternative]{case %_():
+        return %"();
+    }`
+    %?{%IsExtensible()}{case _EXTENSION:
+        return other_->String();}
     }`
 }
 struct ReadString%_()_
@@ -115,10 +115,10 @@ struct ReadString%_()_
     bool operator()(const String_& src, %_()_::E%_()* val) const    // returns true iff recognized input
     {
         bool retval = true;
-		if (0);	// otiose code to allow regular else-if structure
-		%?{1}{else if (src.empty())
-			{retval = %~{%HasDefault()}{false;}%?{%HasDefault()}{true;%ConstructDefault()}}
-		%*[alternative]{%ConstructAlternative()}`
+        if (0);	// otiose code to allow regular else-if structure
+        %?{1}{else if (src.empty())
+            {retval = %~{%HasDefault()}{false;}%?{%HasDefault()}{true;%ConstructDefault()}}
+        %*[alternative]{%ConstructAlternative()}`
         else
             retval = false;
         return retval;
@@ -206,7 +206,7 @@ std::vector<%_()> %_()ListAll()
 %:ConstructDefault:*val = %*[alternative]{%?{%_(default)}{%_(/)_::%_();}}`
 %:ConstructAlternative:
 %*[alias]{	else if (String::Equivalent(src, "%Uppercase()"))
-		*val = %_(/)_::%_(..);
+        *val = %_(/)_::%_(..);
 }`
 %:ConstructExtension:
     else
@@ -223,31 +223,31 @@ std::vector<%_()> %_()ListAll()
 %:LegacyHeader:
 namespace NBiz
 {
-	class %ExportClass() C%_() : public NCore::CEnumeration  
-	{
-	public:
-		//	CEnumeration data
-		CORE_DECLARE_ENUMERATION_ENUM(C%_()) 
-		{
+    class %ExportClass() C%_() : public NCore::CEnumeration
+    {
+    public:
+        //	CEnumeration data
+        CORE_DECLARE_ENUMERATION_ENUM(C%_())
+        {
 %*[alternative]{%?{%*[numeric]{1}}{			%_(../legacy)%_() = %_(numeric),		` emit all numeric values before any others
 }}`
 %?{%MaxNumericSentinel()}{ }` evaluated for side effect (sets counter)
 %*[alternative]{%~{%*[numeric]{1}}{			%_(../legacy)%_() = %#(),
 }}`
-			%_(legacy)Unknown = -1
-		};
+            %_(legacy)Unknown = -1
+        };
 
-		CORE_DECLARE_ENUMERATION(C%_());
+        CORE_DECLARE_ENUMERATION(C%_());
 
-		//Serializable Implementation
-		CORE_DECLARE_SERIALIZABLE();
-		// interoperation with %_()_
-		operator %_()_() const;
-		C%_()(const %_()_& src);
+        //Serializable Implementation
+        CORE_DECLARE_SERIALIZABLE();
+        // interoperation with %_()_
+        operator %_()_() const;
+        C%_()(const %_()_& src);
 
 %*[method]{		%_()
 }`
-	};
+    };
 }	// leave NBiz
 
 %:LegacySource:
@@ -256,7 +256,7 @@ namespace %CatchallNamespace()
 CORE_BEGIN_ENUMERATION_VALUES(C%_())
 %*[alternative]{	CORE_ENUMERATION_VALUE(C%_(..)::%_(../legacy)%_(), "%LegacyShortname()", "%LegacyLongname()");
 }`
-	CORE_ENUMERATION_VALUE(C%_()::%_(legacy)Unknown, "?", "Unknown");
+    CORE_ENUMERATION_VALUE(C%_()::%_(legacy)Unknown, "?", "Unknown");
 CORE_END_ENUMERATION_VALUES()
 
 CORE_DEFINE_ENUMERATION(C%_());
@@ -271,26 +271,26 @@ CORE_SERIALIZABLE_END()
 // interoperation
 C%_()::operator %_()_() const
 {
-	switch (Switch())
-	{
+    switch (Switch())
+    {
 %*[alternative]{	case %_(../legacy)%_():
-		return %_(..)_::%_();
+        return %_(..)_::%_();
 }`
-	}
-	// unrecognized, or Unknown
-	return %_()_::_NOT_SET;
+    }
+    // unrecognized, or Unknown
+    return %_()_::_NOT_SET;
 }
 
 C%_()::C%_()(const %_()_& src)
 {
-	SetValue(%_(legacy)Unknown);
-	switch (src.Switch())
-	{
+    SetValue(%_(legacy)Unknown);
+    switch (src.Switch())
+    {
 %*[alternative]{	case %_(..)_::%_():
-		SetValue(%_(../legacy)%_());
-		break;
+        SetValue(%_(../legacy)%_());
+        break;
 }`
-	}
+    }
 }
 }	// leave %CatchallNamespace()
 

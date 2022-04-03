@@ -2,48 +2,48 @@
 
 struct %_()_
 {
-	bool match_;
+    bool match_;
 %*[entry]{%DeclareEntry()}`
 };
 %_()_ Match%_()(const std::string& src)
 {
     static const boost::regex PATTERN("%*[entry][-_]?{%PatternPart()}");
-	NOTE("Matching for %_()");
-	boost::smatch what;
-	%_()_ retVal;
-	if (boost::regex_match(src, what, PATTERN, boost::match_extra)) 
-	{
-		retVal.match_ = true;
-		auto iter = what.begin();
-		iter++;  // in boost regex, first element is full string, so need to get one past it for first capture
+    NOTE("Matching for %_()");
+    boost::smatch what;
+    %_()_ retVal;
+    if (boost::regex_match(src, what, PATTERN, boost::match_extra))
+    {
+        retVal.match_ = true;
+        auto iter = what.begin();
+        iter++;  // in boost regex, first element is full string, so need to get one past it for first capture
 
-		%*[entry]{%AssignAndIter()}`
-	}
-	else 
-	  retVal.match_ = false; 
+        %*[entry]{%AssignAndIter()}`
+    }
+    else
+      retVal.match_ = false;
 
-	return retVal;
+    return retVal;
 }
 #ifdef IMPROVE_CONTAINERS
 inline %_()_ Match%_()(const String_& src) {return Match%_()(string(src.c_str()));}
 #endif
 
 %:DeclareEntry:`
-	%CType() %_()_;
+    %CType() %_()_;
 %:PatternPart:(%_(pattern))` emit pattern
 %:AssignAndIter:`
 %?{%IsRelDate()}{
-	static const boost::regex %_()Pattern("\\d?\\d[DMY]");
-	boost::smatch %_()What;
-	const string %_()Src = boost::lexical_cast<string>(*iter);
-	if (boost::regex_match(%_()Src, %_()What, %_()Pattern)) 
-	    retVal.%_()_ = NDate::AddTenor(retVal.%SecondVar()_, %_()Src);
-	else 
-		retVal.%_()_ = boost::lexical_cast<%CType()>(*iter);
-	  
-	++iter;
-	}`
+    static const boost::regex %_()Pattern("\\d?\\d[DMY]");
+    boost::smatch %_()What;
+    const string %_()Src = boost::lexical_cast<string>(*iter);
+    if (boost::regex_match(%_()Src, %_()What, %_()Pattern))
+        retVal.%_()_ = NDate::AddTenor(retVal.%SecondVar()_, %_()Src);
+    else
+        retVal.%_()_ = boost::lexical_cast<%CType()>(*iter);
+
+    ++iter;
+    }`
 %~{%IsRelDate()}{
-	retVal.%_()_ = %ConverterFromString()(iter->str().c_str());
-	++iter;
+    retVal.%_()_ = %ConverterFromString()(iter->str().c_str());
+    ++iter;
 }`

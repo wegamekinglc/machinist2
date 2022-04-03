@@ -1,64 +1,64 @@
 %:ExcelSource:
 %~{%_(suppress/excel)}{
 extern "C" __declspec(dllexport) OPER_* xl_%_()
-	(%*[input], {const OPER_* xl_%_()}%?{%MultipleOutputs()}{, const OPER_* format})	`this will break if a function has multiple outputs and no inputs, O well
+    (%*[input], {const OPER_* xl_%_()}%?{%MultipleOutputs()}{, const OPER_* format})	`this will break if a function has multiple outputs and no inputs, O well
 
 {
-	Excel::InitializeSessionIfNeeded();
-	const char* argName = 0;
-	try
-	{%#0()%?{%#()}{}	`start counting args from 1
-		
-		Log::Write(%"());`
-		%*[input]{%ExcelTranslateInput()}
-		argName = 0;`
-		%*[condition]{%EnforceCondition()}
-		%*[output]{%DeclareOutput()}
-		%_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {&%_()});
-		Excel::Retval_ retval;
-		%*[output]{retval.Load(%_());
-		}` this is the close brace for the loop over outputs, doesn't show up in the generated code
+    Excel::InitializeSessionIfNeeded();
+    const char* argName = 0;
+    try
+    {%#0()%?{%#()}{}	`start counting args from 1
+
+        Log::Write(%"());`
+        %*[input]{%ExcelTranslateInput()}
+        argName = 0;`
+        %*[condition]{%EnforceCondition()}
+        %*[output]{%DeclareOutput()}
+        %_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {&%_()});
+        Excel::Retval_ retval;
+        %*[output]{retval.Load(%_());
+        }` this is the close brace for the loop over outputs, doesn't show up in the generated code
 return retval.ToXloper(%?{%MultipleOutputs()}{Excel::ToString(format, true)});
-	}
-	catch (std::exception& e)
-	{
-		return Excel::Error(e.what(), argName);
-	}
-	catch (...)
-	{
-		return Excel::Error("Unknown error", argName);
-	}
+    }
+    catch (std::exception& e)
+    {
+        return Excel::Error(e.what(), argName);
+    }
+    catch (...)
+    {
+        return Excel::Error("Unknown error", argName);
+    }
 }
 
 struct XlRegister_%_()_
 {
-	XlRegister_%_()_()
-	{
-		Vector_<String_> argHelp;`
-		%*[input]{%AddArgHelp()}
-		Excel::Register("%DLLBaseName()", "xl_%_()", "%ExcelName()", %*[help]{%"()}, "%ExcelArgTypes()", "%ExcelArgNames()", argHelp, %IsVolatile()%*[category]{, %"()});
-	}
+    XlRegister_%_()_()
+    {
+        Vector_<String_> argHelp;`
+        %*[input]{%AddArgHelp()}
+        Excel::Register("%DLLBaseName()", "xl_%_()", "%ExcelName()", %*[help]{%"()}, "%ExcelArgTypes()", "%ExcelArgNames()", argHelp, %IsVolatile()%*[category]{, %"()});
+    }
 };
 static XlRegister_%_()_ The_%_()_XlRegisterer;
 }` endif not suppress/excel
 %:ExcelTranslateInput:
-		argName = "%_() (input #%#())";
-		const %CType() %_(myname) = Excel::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(xl_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%_())};`
+        argName = "%_() (input #%#())";
+        const %CType() %_(myname) = Excel::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(xl_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%_())};`
 %*[insert]{
-		%_()}`
+        %_()}`
 %:DeclareOutput:
-		%CType() %_();`
+        %CType() %_();`
 %:DeclareOutputMember:
-		%CType() %_()_;`
+        %CType() %_()_;`
 %:ExcelArgTypes:Q%*[input]{Q}%?{%MultipleOutputs()}{Q}%~{%_()}^Repository{!}`	everything is a Q-type (XLOPER12); Repository functions are volatile
 %:ExcelArgNames:%*[input],{%?{%_(optional)}{[}%_()%?{%_(optional)}{]}}%?{%MultipleOutputs()}{,format}`
 %:HasAnInput:%*[input]{1}
 %:IsOptional:%*[optional]{1}
 %:HasHelp:%*[help]{1}
 %:AddArgHelp:
-		argHelp.push_back(%*[help]{%"()});`
+        argHelp.push_back(%*[help]{%"()});`
 %:EnforceCondition:
-		REQUIRE(%_(), %~{%HasHelp()}{"Validation failed: " %"()}%*[help]{%"()});` emit stringified condition if help is not available
+        REQUIRE(%_(), %~{%HasHelp()}{"Validation failed: " %"()}%*[help]{%"()});` emit stringified condition if help is not available
 %:IsVolatile:%?{%_(volatile)}{true}%~{%_(volatile)}{false}`
 `
 `
@@ -66,47 +66,47 @@ static XlRegister_%_()_ The_%_()_XlRegisterer;
 %~{%_(suppress/python)}{
 extern "C" __declspec(dllexport) PyObject* py_%_()(PyObject* self, PyObject* positional, PyObject* named)
 {
-	const char* argName = 0;
-	try
-	{
-		Log::Write(%"());
-		scoped_ptr<Python::ArgReader_> pyReader(Python::NewArgReader(positional, named));	// will vend args in sequence
-		%*[input]{%PythonTranslateInput()}
-		argName = 0;`
-		%*[condition]{%EnforceCondition()}
-		%*[output]{%DeclareOutput()}
-		%_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {&%_()});
-		scoped_ptr<Python::Retval_> retval(Python::NewRetval());
-		%*[output]{retval->Append(%_());
-		}` this is the close brace for the loop over outputs, doesn't show up in the generated code
+    const char* argName = 0;
+    try
+    {
+        Log::Write(%"());
+        scoped_ptr<Python::ArgReader_> pyReader(Python::NewArgReader(positional, named));	// will vend args in sequence
+        %*[input]{%PythonTranslateInput()}
+        argName = 0;`
+        %*[condition]{%EnforceCondition()}
+        %*[output]{%DeclareOutput()}
+        %_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {&%_()});
+        scoped_ptr<Python::Retval_> retval(Python::NewRetval());
+        %*[output]{retval->Append(%_());
+        }` this is the close brace for the loop over outputs, doesn't show up in the generated code
 return retval->Release();
-	}
-	catch (std::exception& e)
-	{
-		return Python::Error(e.what(), argName);
-	}
-	catch (...)
-	{
-		return Python::Error("Unknown error", argName);
-	}
+    }
+    catch (std::exception& e)
+    {
+        return Python::Error(e.what(), argName);
+    }
+    catch (...)
+    {
+        return Python::Error("Unknown error", argName);
+    }
 }
 
 struct PyRegister_%_()_
 {
-	PyRegister_%_()_()
-	{
-		Vector_<String_> argHelp;`
-		%*[input]{%AddArgHelp()}
-		Python::Register(py_%_(), "%PythonName()", %*[help]{%"()}, "%ExcelArgNames()", argHelp);
-	}
+    PyRegister_%_()_()
+    {
+        Vector_<String_> argHelp;`
+        %*[input]{%AddArgHelp()}
+        Python::Register(py_%_(), "%PythonName()", %*[help]{%"()}, "%ExcelArgNames()", argHelp);
+    }
 };
 static PyRegister_%_()_ The_%_()_PyRegisterer;
 }` endif not suppress/python
 %:PythonTranslateInput:
-		argName = "%_()";
-		const %CType() %_(myname) = Python::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(pyReader->Next(argName)%*[intype]{, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%_())};`
+        argName = "%_()";
+        const %CType() %_(myname) = Python::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(pyReader->Next(argName)%*[intype]{, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%_())};`
 %*[insert]{
-		%_()}`
+        %_()}`
 `
 `
 
@@ -115,89 +115,89 @@ static PyRegister_%_()_ The_%_()_PyRegisterer;
 
 namespace
 {
-	void %_()_Checked
-		(%*[input], 
-		 {const %CType()& %_(myname)}%?{%HasAnInput()}{, 
+    void %_()_Checked
+        (%*[input],
+         {const %CType()& %_(myname)}%?{%HasAnInput()}{,
 }`
-		 %*[output],
-		 {%CppOutType() %_()})
-	{`
+         %*[output],
+         {%CppOutType() %_()})
+    {`
 %*[input]{%*[insert]{
-		%_()}}`
-		%*[condition]{%EnforceCondition()}
-		%_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {%_()});
-	}
+        %_()}}`
+        %*[condition]{%EnforceCondition()}
+        %_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {%_()});
+    }
 }	// leave local
 
 %ExportFunc() ProDirect::%CppName()_Out_ ProDirect::%CppName()
-	(%*[input], 
-	 {%CppInType() %_()})
+    (%*[input],
+     {%CppInType() %_()})
 {
-	// Excel::InitializeSessionIfNeeded();	-- presently assuming C++ users do this for themselves
-	try
-	{
-		%CppName()_Out_ retval;
-		%_()_Checked(%*[input], {%CppPassArg()}%?{%HasAnInput()}{, }%*[output], {%~{%_(type)}handle{%?{%_(subtype)}{ReceiveHandle_<%_(subtype)_>(}}&retval.%_()_%~{%_(type)}handle{%?{%_(subtype)}{)}}});
-		return retval;
-	}
-	catch (std::exception&)
-	{
-		throw;
-	}
-	catch (...)
-	{
-		throw ProBase::Exception_("Unknown error");
-	}
+    // Excel::InitializeSessionIfNeeded();	-- presently assuming C++ users do this for themselves
+    try
+    {
+        %CppName()_Out_ retval;
+        %_()_Checked(%*[input], {%CppPassArg()}%?{%HasAnInput()}{, }%*[output], {%~{%_(type)}handle{%?{%_(subtype)}{ReceiveHandle_<%_(subtype)_>(}}&retval.%_()_%~{%_(type)}handle{%?{%_(subtype)}{)}}});
+        return retval;
+    }
+    catch (std::exception&)
+    {
+        throw;
+    }
+    catch (...)
+    {
+        throw ProBase::Exception_("Unknown error");
+    }
 }
 
 %:CppHeader:
 namespace ProDirect
 {
-	struct %CppName()_Out_
-	{
+    struct %CppName()_Out_
+    {
 %*[output]{		%CBaseType() %_()_;
 }`
-	};
+    };
 
-	%ExportFunc() %CppName()_Out_ %CppName()
-		(%*[input],
-		 {%CppInType() %_()%*[default]{ = %_()}%?{%_(optional)}{%~{%*[default]{_}}{ = 0}}}`
+    %ExportFunc() %CppName()_Out_ %CppName()
+        (%*[input],
+         {%CppInType() %_()%*[default]{ = %_()}%?{%_(optional)}{%~{%*[default]{_}}{ = 0}}}`
 );
 }
 `
 %:DotNetDeclareInput:`
 %DotNetType() dn_%_()`
 %:DotNetDeclareOutput:
-		%DotNetType() %_()_;
+        %DotNetType() %_()_;
 %:DotNetTranslateInput:
-		argName = "%_()";
-		const %CType() %_() = DotNet::%CTypeTranslator()(dn_%_()%?{%IsOptional()}{, true});`
+        argName = "%_()";
+        const %CType() %_() = DotNet::%CTypeTranslator()(dn_%_()%?{%IsOptional()}{, true});`
 %:DotNetSource:
 %~{%_(suppress/dotnet)}{
 #pragma managed
 #include "MG_%_().h"
 
 TALibNet::%_()_Return_^ TALibNet::%_()_::Run
-	(%*[input], {%DotNetDeclareInput()})
+    (%*[input], {%DotNetDeclareInput()})
 {
-	%_()_Return_^ retval = gcnew %_()_Return_;
-	const char* argName = 0;
-	try
-	{`
-		%*[input]{%DotNetTranslateInput()}
-		argName = 0;`
-		%*[condition]{%EnforceCondition()}
-		%*[output]{%DeclareOutput()}
-		::%_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {&%_()});
-		%*[output]{retval->%_()_ = DotNet::CopyOut(%_());
-		}
-		return retval;
-	}
-	catch (std::exception& e)
-	{
-		retval->error_ = DotNet::Error(e.what(), argName);
-		return retval;
-	}
+    %_()_Return_^ retval = gcnew %_()_Return_;
+    const char* argName = 0;
+    try
+    {`
+        %*[input]{%DotNetTranslateInput()}
+        argName = 0;`
+        %*[condition]{%EnforceCondition()}
+        %*[output]{%DeclareOutput()}
+        ::%_()(%*[input], {%_()}%?{%HasAnInput()}{, }%*[output], {&%_()});
+        %*[output]{retval->%_()_ = DotNet::CopyOut(%_());
+        }
+        return retval;
+    }
+    catch (std::exception& e)
+    {
+        retval->error_ = DotNet::Error(e.what(), argName);
+        return retval;
+    }
 }
 }
 %:DotNetHeader:
@@ -205,18 +205,18 @@ TALibNet::%_()_Return_^ TALibNet::%_()_::Run
 
 namespace TALibNet
 {
-	public ref struct %_()_Return_
-	{
-		System::String^ error_;`
-		%*[output]{%DotNetDeclareOutput()}`
-	};
+    public ref struct %_()_Return_
+    {
+        System::String^ error_;`
+        %*[output]{%DotNetDeclareOutput()}`
+    };
 
-	public ref class %_()_
-	{
-	public:
-		static initonly %_()_^ Instance = gcnew %_()_;
-		%_()_Return_^ Run(%*[input], {%DotNetDeclareInput()});
-	};
+    public ref class %_()_
+    {
+    public:
+        static initonly %_()_^ Instance = gcnew %_()_;
+        %_()_Return_^ Run(%*[input], {%DotNetDeclareInput()});
+    };
 }
 }
 
