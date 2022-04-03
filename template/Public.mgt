@@ -10,7 +10,7 @@ extern "C" __declspec(dllexport) OPER_* xl_%_()
     try
     {%#0()%?{%#()}{}	`start counting args from 1
 
-        Log::Write(%"());`
+        Logging::Write(%"());`
         %*[input]{%ExcelTranslateInput()}
         argName = 0;`
 %*[condition]
@@ -76,7 +76,7 @@ extern "C" __declspec(dllexport) PyObject* py_%_()(PyObject* self, PyObject* pos
     const char* argName = 0;
     try
     {
-        Log::Write(%"());
+        Logging::Write(%"());
         scoped_ptr<Python::ArgReader_> pyReader(Python::NewArgReader(positional, named));	// will vend args in sequence
         %*[input]{%PythonTranslateInput()}
         argName = 0;`
@@ -357,7 +357,7 @@ extern "C" __declspec(dllexport) double ffi_%_()
     try
     {
         Cookie::Input_ get;
-        Log::Write(%"());
+        Logging::Write(%"());
 %#0()%?{%#()}{}%*[input]{%CookieTranslateInput()}`
         argName = 0;
 %*[condition]
