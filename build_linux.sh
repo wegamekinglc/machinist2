@@ -2,7 +2,7 @@
 
 export num_cores=$(grep -c processor /proc/cpuinfo)
 export MACHINIST_DIR=$PWD
-export BUILD_TYPE=Debug
+export BUILD_TYPE=Release
 
 mkdir -p build
 (
