@@ -185,7 +185,7 @@ namespace ProDirect
 %:DotNetSource:
 %~{%_(suppress/dotnet)}{
 #pragma managed
-#include "MG_%_().h"
+#include "MG_%_()_public_dotnet.hpp"
 
 TALibNet::%_()_Return_^ TALibNet::%_()_::Run
     (%*[input], {%DotNetDeclareInput()})
@@ -200,7 +200,7 @@ TALibNet::%_()_Return_^ TALibNet::%_()_::Run
 {		%EnforceCondition()}
 %*[output]
 {		%DeclareOutput()}
-        ::%CallInternal()
+        %CallInternal()
         %*[output]{retval->%_()_ = DotNet::CopyOut(%_());
         }
         return retval;

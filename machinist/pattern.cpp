@@ -5,6 +5,8 @@
 #include "info.hpp"
 #include "parseutils.hpp"
 #include "template.hpp"
+#include "file.hpp"
+
 using namespace ParseUtils;
 
 namespace {
