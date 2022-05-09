@@ -138,7 +138,10 @@ namespace {
                                                           lib);    // might parse a template file, lazily; will hold a static registry
         const Handle_<Info_> info = Info::Parse(type_and_name.first, type_and_name.second,
                                                 content);    // will access a static registry of parsers
-        const vector<Config_::Output_> &targets = config.vals_.find(type_and_name.first)->second;
+        auto find = config.vals_.find(type_and_name.first);
+        if (find == config.vals_.end())
+            return;
+        const vector<Config_::Output_> &targets = find->second;
         for (const auto &target : targets) {
             string dstName = path + target.dst_(*info);
             vector<string> output;
