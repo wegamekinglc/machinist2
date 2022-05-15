@@ -51,7 +51,5 @@ if %errorlevel% neq 0 exit /b 1
 cd ..
 
 :set_variable
-if "%~3"=="" (
- set %~1=%~2
-)
+set %~1=%~2
 EXIT /B 0
