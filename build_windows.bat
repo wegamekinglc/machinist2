@@ -1,8 +1,8 @@
 call :set_variable BUILD_TYPE Release %BUILD_TYPE%
-call :set_variable ADDRESS_MODEL Win64 %ADDRESS_MODEL%
+call :set_variable ADDRESS_MODEL Win32 %ADDRESS_MODEL%
 call :set_variable MACHINIST_DIR "%CD%" %MACHINIST_DIR%
 call :set_variable MSVC_RUNTIME dynamic %MSVC_RUNTIME%
-call :set_variable MSVC_VERSION "Visual Studio 16 2019" %MSVC_VERSION%
+call :set_variable MSVC_VERSION "Visual Studio 15 2017" %MSVC_VERSION%
 
 echo BUILD_TYPE:  %BUILD_TYPE%
 echo MACHINIST_DIR: %MACHINIST_DIR%
