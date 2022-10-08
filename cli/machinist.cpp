@@ -231,7 +231,9 @@ namespace {
 
 void XMain(int argc, char *argv[]) {
     char buf[2048];
-    (void) getcwd(buf, 2048);
+    char* buff = getcwd(buf, 2048);
+    if (buff == NULL)
+        THROW("get current working directory failed.")
     cout << "In directory " << buf << endl;
 
     string configFile;
