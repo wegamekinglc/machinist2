@@ -55,7 +55,7 @@ Dictionary_ %_()_::Data() const
 } 
 }
 %:InitializeMember:
-%_()_(Dictionary::Extract(src, "%Condensed()", std::ptr_fun(%Extractor())%SupplyDefault()))`
+%_()_(Dictionary::Extract(src, "%Condensed()", [](const Cell_& c) { return %Extractor()(c);}%SupplyDefault()))`
 %:InitializeMemberFromRow:
 %_()_(src.%RecordExtractor()(%#()%SupplyDefault()))`
 %:AssignMemberFromRHS:
