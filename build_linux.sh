@@ -12,7 +12,6 @@ mkdir -p build
 (
   cd build || exit
   cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$DAL_DIR ..
-  make clean
   make -j${NUM_CORES}
   make install
 )
