@@ -4,7 +4,7 @@
 #include "file.hpp"
 #include "info.hpp"
 #include "emitter.hpp"
-#include "parseUtils.hpp"
+#include "parseutils.hpp"
 #include "template.hpp"
 
 #include <algorithm>
