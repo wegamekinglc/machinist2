@@ -1,192 +1,325 @@
-
 #include "parseutils.hpp"
+
+HERE
+
 #include "emitter.hpp"
 #include "info.hpp"
-#include <assert.h>
 
-bool ParseUtils::IsWhite(char c) { return c == ' ' || c == '\t' || c == '\n'; }
-bool ParseUtils::StartsWithWhitespace(const string& line) { return line.empty() || IsWhite(line[0]); }
-bool ParseUtils::IsAllWhite(const string& line) {
-    for (auto pc = line.begin(); pc != line.end(); ++pc)
-        if (!IsWhite(*pc))
+#include <array>
+#include <cassert>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+#include <algorithm>
+
+
+bool
+ParseUtils::
+IsWhite(char c) {
+    return c == ' ' || c == '\t' || c == '\n';
+}
+
+
+bool
+ParseUtils::
+StartsWithWhitespace(const std::string &line) {
+    return line.empty() || IsWhite(line[0]);
+}
+
+
+bool
+ParseUtils::IsAllWhite(const std::string &line) {
+    for (auto pc = line.begin(); pc != line.end(); ++pc) {
+        if (!IsWhite(*pc)) {
             return false;
+        }
+    }
     return true;
 }
 
-string ParseUtils::AfterInitialWhitespace(const string& line) {
-    if (line.empty())
-        return string();
+
+std::string
+ParseUtils::AfterInitialWhitespace(const std::string &line) {
+    if (line.empty()) {
+        return std::string();
+    }
     auto offset = line.find_first_not_of(" \t");
-    return offset == string::npos ? string() : line.substr(offset);
+    return offset == std::string::npos ? std::string() : line.substr(offset);
 }
 
-string ParseUtils::TrimWhitespace(const string& src) {
-    string retval = AfterInitialWhitespace(src);
-    while (!retval.empty() && IsWhite(retval.back()))
+
+std::string
+ParseUtils::
+TrimWhitespace(const std::string &src) {
+    std::string retval = AfterInitialWhitespace(src);
+    while (!retval.empty() && IsWhite(retval.back())) {
         retval.pop_back();
+    }
     return retval;
 }
 
-vector<string>::const_iterator ParseUtils::ReadHelp(const Info_* parent,
-                                                    const Info_* root,
-                                                    vector<string>::const_iterator line,
-                                                    vector<string>::const_iterator end,
-                                                    unique_ptr<Info_>* dst,
-                                                    vector<Handle_<Info_>>* conditions) {
-    while (line != end && StartsWithWhitespace(*line)) {
-        string text = AfterInitialWhitespace(*line);
-        REQUIRE(!text.empty(), "Line contains only whitespace");
-        if (text[0] == '&') { // local condition
-            REQUIRE(conditions, "Unexpected '&' in context which does not allow local conditions");
-            text = text.substr(1);
-            auto bs = text.find('\\');
-            unique_ptr<Info_> temp(new Info_(parent, root, text.substr(0, bs)));
-            if (bs != string::npos)
-                temp->children_.insert(std::make_pair("help", Info::MakeLeaf(temp.get(), root, text.substr(bs + 1))));
-            conditions->push_back(temp.release());
-        } else { // actual help
-            if (!dst->get())
-                dst->reset(new Info_(parent, root, string()));
-            else
-                (*dst)->content_ += ' ';
-            (*dst)->content_ += text;
-        }
-        ++line;
-    }
-    return line;
+
+std::vector<std::string>::const_iterator
+ParseUtils::ReadHelp(const Info_ *parent,
+                     const Info_ *root,
+                     std::vector<std::string>::const_iterator line,
+                     std::vector<std::string>::const_iterator end,
+                     std::unique_ptr<Info_> *dst,
+                     std::vector<Handle_ < Info_>
+
+>* conditions)
+{
+while (line !=
+end &&StartsWithWhitespace(*line)
+)
+{
+std::string text = AfterInitialWhitespace(*line);
+REQUIRE(!text.
+
+empty(),
+
+"Line contains only whitespace");
+if (text[0] == '&')
+{
+// local condition
+REQUIRE(conditions,
+"Unexpected '&' in context which does not allow local conditions");
+
+text = text.substr(1);
+auto bs = text.find('\\');
+std::unique_ptr<Info_> temp(new Info_(parent, root, text.substr(0, bs)));
+if (bs != std::string::npos)
+{
+temp->children_.
+insert(std::make_pair("help", Info::MakeLeaf(temp.get(), root, text.substr(bs + 1)))
+);
+}
+conditions->
+push_back(temp
+.
+
+release()
+
+);
+}
+else
+{
+// actual help
+if (!dst->
+
+get()
+
+)
+{
+dst->reset(new
+Info_(parent, root, std::string()
+));
+}
+else
+{
+(*dst)->content_ += ' ';
+}
+(*dst)->content_ +=
+text;
+}
+++
+line;
+}
+return
+line;
 }
 
-vector<string>::const_iterator ParseUtils::ReadInsert(const Info_* parent,
-                                                      const Info_* root,
-                                                      vector<string>::const_iterator line,
-                                                      vector<string>::const_iterator end,
-                                                      unique_ptr<Info_>* dst) {
+
+std::vector<std::string>::const_iterator
+ParseUtils::
+ReadInsert(const Info_ *parent,
+           const Info_ *root,
+           std::vector<std::string>::const_iterator line,
+           std::vector<std::string>::const_iterator end,
+           std::unique_ptr<Info_> *dst) {
     while (line != end && !line->empty() && line->front() == '+') {
-        if (!dst->get())
-            dst->reset(new Info_(parent, root, string()));
-        else
+        if (!dst->get()) {
+            dst->reset(new Info_(parent, root, std::string()));
+        } else {
             (*dst)->content_ += ' ';
+        }
         (*dst)->content_ += line->substr(1);
         ++line;
     }
     return line;
 }
 
-bool ParseUtils::AddNonempty(Info_* info, const string& tag, const string& val) {
-    if (val.empty())
+
+bool
+ParseUtils::
+AddNonempty(Info_ *info,
+            const std::string &tag,
+            const std::string &val) {
+    if (val.empty()) {
         return false;
+    }
     info->children_.insert(make_pair(tag, Info::MakeLeaf(info, info->root_, val)));
     return true;
 }
 
-namespace {
-    static const string HELP("help");
 
-    Info_* NewCondition(const Info_* parent, const Info_* root, const string& code, unique_ptr<Info_>* help) {
-        unique_ptr<Info_> retval(new Info_(parent, root, code));
+namespace {
+    static const std::string HELP("help");
+
+    Info_ *
+    NewCondition(const Info_ *parent,
+                 const Info_ *root,
+                 const std::string &code,
+                 std::unique_ptr<Info_> *help) {
+        std::unique_ptr<Info_> retval(new Info_(parent, root, code));
         if (help->get()) {
             (*help)->parent_ = retval.get();
             retval->children_.insert(make_pair(HELP, Handle_<Info_>(help->release())));
         }
         return retval.release();
     }
-} // namespace
 
-vector<string>::const_iterator ParseUtils::ReadCondition(const Info_* parent,
-                                                         vector<string>::const_iterator line,
-                                                         vector<string>::const_iterator end,
-                                                         Handle_<Info_>* dst) {
+}  // namespace <un-named>
+
+
+
+std::vector<std::string>::const_iterator
+ParseUtils::
+ReadCondition(const Info_ *parent,
+              std::vector<std::string>::const_iterator line,
+              std::vector<std::string>::const_iterator end,
+              Handle_ <Info_> *dst) {
     REQUIRE(!line->empty() && !StartsWithWhitespace(*line), "Expected un-indented line to declare condition");
-    const string code = *line;
-    unique_ptr<Info_> help;
-    line = ReadHelp(0, parent, ++line, end, &help); // correct the parent later
+
+    std::string code = *line;
+    std::unique_ptr<Info_> help;
+    line = ReadHelp(0, parent, ++line, end, &help);                      // correct the parent later
+    if (!help.get() && code.find('\\') != std::string::npos) {   // we have inline help
+        auto slash = code.find('\\');
+        help.reset(new Info_(parent, parent->root_, code.substr(slash + 1)));
+        code = code.substr(0, slash);
+    }
     dst->reset(NewCondition(parent, parent->root_, code, &help));
+    if (help.get())
+        help->parent_ = dst->get();
     return line;
 }
 
-vector<string>::const_iterator ParseUtils::ReadLink(const Info_* parent,
-                                                    vector<string>::const_iterator line,
-                                                    vector<string>::const_iterator end,
-                                                    Handle_<Info_>* dst) {
+
+std::vector<std::string>::const_iterator
+ParseUtils::
+ReadLink(const Info_ *parent,
+         std::vector<std::string>::const_iterator line,
+         std::vector<std::string>::const_iterator end,
+         Handle_ <Info_> *dst) {
     REQUIRE(!line->empty(), "Expected non-empty line to declare link");
-    string type, name = AfterInitialWhitespace(*line);
+
+    std::string type, name = AfterInitialWhitespace(*line);
     auto space = name.find(' ');
-    if (space != string::npos) {
+    if (space != std::string::npos) {
         type = AfterInitialWhitespace(name.substr(space));
         name = name.substr(0, space);
     }
-    unique_ptr<Info_> link(new Info_(parent, parent->root_, name));
-    if (!type.empty())
+    std::unique_ptr<Info_> link(new Info_(parent, parent->root_, name));
+    if (!type.empty()) {
         link->children_.insert(std::make_pair("type", Info::MakeLeaf(link.get(), parent->root_, type)));
+    }
     dst->reset(link.release());
     return ++line;
 }
 
-string ParseUtils::GetMandatory(const Info_& info, const string& child) {
+
+std::string
+ParseUtils::GetMandatory(const Info_ &info, const std::string &child) {
     auto r = info.children_.equal_range(child);
+
     REQUIRE(r.first != r.second, "Can't find '" + child + "' field");
     REQUIRE(r.first == --r.second, "'" + child + "' field is not unique");
-    return r.first->second->content_;
-}
-string ParseUtils::GetOptional(const Info_& info, const string& child) {
-    auto r = info.children_.equal_range(child);
-    if (r.first == r.second)
-        return string();
-    REQUIRE(r.first == --r.second, "'" + child + "' field is not unique");
+
     return r.first->second->content_;
 }
 
-string ParseUtils::EmbeddableForm(const string& src) {
-    string retval;
+
+std::string
+ParseUtils::GetOptional(const Info_ &info, const std::string &child) {
+    auto r = info.children_.equal_range(child);
+    if (r.first == r.second) {
+        return std::string();
+    }
+
+    REQUIRE(r.first == --r.second, "'" + child + "' field is not unique");
+
+    return r.first->second->content_;
+}
+
+
+std::string
+ParseUtils::
+EmbeddableForm(const std::string &src) {
+    std::string retval;
     auto ps = src.begin();
     retval.push_back(toupper(*ps));
     while (++ps != src.end()) {
-        if ((*ps >= 'a' && *ps <= 'z') || (*ps >= 'A' && *ps <= 'Z') || (*ps >= '0' && *ps <= '9') ||
-            *ps == '_') // it's a letter or number, or underscore
+        if ((*ps >= 'a' && *ps <= 'z') || (*ps >= 'A' && *ps <= 'Z') || (*ps >= '0' && *ps <= '9') || *ps == '_') {
+            // it's a letter or number, or underscore
+
             retval.push_back(*ps);
-        else
+        } else {
             break;
+        }
     }
-    while (!retval.empty() && retval.back() == '_')
-        retval.pop_back(); // no trailing underscores
+    while (!retval.empty() && retval.back() == '_') {
+        retval.pop_back();                                              // no trailing underscores
+    }
     return retval;
 }
 
-string ParseUtils::TexSafe(const string& src) // wraps underscores in $
+
+std::string
+ParseUtils::
+TexSafe(const std::string &src)                                         // wraps underscores in $
 {
-    string retval;
+    std::string retval;
     bool mathMode = false;
     for (auto ps = src.begin(); ps != src.end(); ++ps) {
         if (*ps == '_' || *ps == '&') {
-            if (!mathMode)
+            if (!mathMode) {
                 retval.push_back('$');
+            }
             mathMode = true;
             retval.push_back('\\');
             retval.push_back(*ps);
         } else if (*ps == '\\') {
-            if (!mathMode)
+            if (!mathMode) {
                 retval.push_back('$');
+            }
             mathMode = true;
             retval += "\\backslash";
         } else if (*ps == '^') {
-            if (!mathMode)
+            if (!mathMode) {
                 retval.push_back('$');
+            }
             mathMode = true;
             retval.push_back(*ps);
+
             // need to eat the next character too
-            if (++ps != src.end())
+            if (++ps != src.end()) {
                 retval.push_back(*ps);
+            }
         } else if (*ps == '>' || *ps == '<') {
-            if (!mathMode)
+            if (!mathMode) {
                 retval.push_back('$');
+            }
             mathMode = true;
             retval.push_back(*ps);
         } else if (*ps == '%') {
             retval.push_back('\\');
             retval.push_back(*ps);
         } else {
-            if (mathMode)
+            if (mathMode) {
                 retval.push_back('$');
+            }
             mathMode = false;
             retval.push_back(*ps);
         }
@@ -194,74 +327,197 @@ string ParseUtils::TexSafe(const string& src) // wraps underscores in $
     return retval;
 }
 
-string ParseUtils::HtmlSafe(const string& src) // hides &gt; &lt:
+
+std::string
+ParseUtils::
+HtmlSafe(const std::string &src)                                        // hides &gt; &lt:
 {
-    string retval;
+    std::string retval;
     for (auto ps = src.begin(); ps != src.end(); ++ps) {
-        if (*ps == '>')
+        if (*ps == '>') {
             retval += "&gt;";
-        else if (*ps == '<')
+        } else if (*ps == '<') {
             retval += "&lt;";
-        else if (*ps == '&')
+        } else if (*ps == '&') {
             retval += "&amp;";
-        else
+        } else {
             retval.push_back(*ps);
+        }
     }
     return retval;
 }
 
-string ParseUtils::Condensed(const string& src) {
-    static const string OTIOSE(" _\t");
-    string retval;
+
+std::string
+ParseUtils::
+Condensed(const std::string &src) {
+    static const std::string OTIOSE(" \n\t");
+    std::string retval;
     for (auto p = src.begin(); p != src.end(); ++p) {
-        if (OTIOSE.find(*p) == string::npos)
+        if (OTIOSE.find(*p) == OTIOSE.npos) {
             retval.push_back(toupper(*p));
+        }
     }
     return retval;
 }
+
 
 namespace {
-    string WithSubsName(const string& src, const Info_* subs) {
-        string retval;
-        for (auto ps = src.begin(); ps != src.end(); ++ps) {
-            if (*ps == '$')
-                retval += subs->content_;
-            else
-                retval.push_back(*ps);
+    std::string
+    XCamelCase(const std::string &src, bool uppercase_first) {
+        std::string retval;
+        bool upper = uppercase_first;
+        for (char c: src) {
+            if (c == '_') {
+                upper = true;
+            } else if (upper) {
+                retval.push_back(toupper(c));
+                upper = false;
+            } else {
+                retval.push_back(c);
+            }
         }
         return retval;
     }
-} // namespace
 
-string ParseUtils::WithParentName(const Info_& src) { return WithSubsName(src.content_, src.parent_); }
-string ParseUtils::WithGrandparentName(const Info_& src) { return WithSubsName(src.content_, src.parent_->parent_); }
+}  // namespace <un-named>
+
+
+
+std::string
+ParseUtils::
+PascalCase(const std::string &src) {
+    return XCamelCase(src, true);
+}
+
+
+std::string
+ParseUtils::
+CamelCase(const std::string &src) {
+    return XCamelCase(src, false);
+}
+
+
+std::string
+ParseUtils::
+SnakeCase(const std::string &src) {
+    std::string retval;
+    for (char c: src) {
+        char l = tolower(c);
+        if (l != c) {
+            retval.push_back('_');
+        }
+        retval.push_back(l);
+    }
+    return retval;
+}
+
+
+std::string
+ParseUtils::
+UpperCase(const std::string &src) {
+    std::string retval(src);
+    std::transform(retval.begin(), retval.end(), retval.begin(), toupper);
+    return retval;
+}
+
+
+std::string
+ParseUtils::
+LowerCase(const std::string &src) {
+    std::string retval(src);
+    std::transform(retval.begin(), retval.end(), retval.begin(), tolower);
+    return retval;
+}
+
+
+namespace {
+    std::string WithSubsName(const std::string &src, const Info_ *subs) {
+        std::string retval;
+        for (auto ps = src.begin(); ps != src.end(); ++ps) {
+            if (*ps == '$') {
+                retval += subs->content_;
+            } else {
+                retval.push_back(*ps);
+            }
+        }
+        return retval;
+    }
+
+}  // namespace <un-named>
+
+
+
+std::string
+ParseUtils::
+WithParentName(const Info_ &src) {
+    return WithSubsName(src.content_, src.parent_);
+}
+
+
+std::string
+ParseUtils::
+WithGrandparentName(const Info_ &src) {
+    return WithSubsName(src.content_, src.parent_->parent_);
+}
+
 
 namespace {
     struct EmitUnassisted_ : Emitter_ {
+        EmitUnassisted_(ParseUtils::emit_from_info_t func)
+                : func_(func) {}
+
+
+        inline
+        std::vector<std::string>
+        operator()(const Info_ &arg, const Emitter::Funcs_ &) const override {
+            return std::vector<std::string>(1, func_(arg));
+        }
+
+
         ParseUtils::emit_from_info_t func_;
-        EmitUnassisted_(ParseUtils::emit_from_info_t func) : func_(func) {}
-        inline vector<string> operator()(const Info_& arg, const Emitter::Funcs_&) const override {
-            return vector<string>(1, func_(arg));
-        }
     };
+
+
     struct EmitTransform_ : StringTransform_ {
-        ParseUtils::emit_from_string_t func_;
-        EmitTransform_(ParseUtils::emit_from_string_t func) : func_(func) {}
-        inline vector<string> operator()(const string& src, const Emitter::Funcs_&) const override {
-            return vector<string>(1, func_(src));
+        EmitTransform_(ParseUtils::emit_from_string_t func)
+                : func_(func) {}
+
+
+        inline
+        std::vector<std::string>
+        operator()(const std::string &src, const Emitter::Funcs_ &) const override {
+            return std::vector<std::string>(1, func_(src));
         }
+
+
+        ParseUtils::emit_from_string_t func_;
     };
-} // namespace
 
-Emitter_* ParseUtils::EmitUnassisted(ParseUtils::emit_from_info_t func) { return new EmitUnassisted_(func); }
+}  // namespace <un-named>
 
-StringTransform_* ParseUtils::EmitTransform(ParseUtils::emit_from_string_t func) { return new EmitTransform_(func); }
 
-string ParseUtils::UntilWhite(const string& src) {
-    string retval;
+Emitter_ *
+ParseUtils::EmitUnassisted(ParseUtils::emit_from_info_t func) {
+    return new EmitUnassisted_(func);
+}
+
+
+StringTransform_ *
+ParseUtils::
+EmitTransform(ParseUtils::emit_from_string_t func) {
+    return new EmitTransform_(func);
+}
+
+
+std::string
+ParseUtils::
+UntilWhite(const std::string &src) {
+    std::string retval;
     for (auto pc = src.begin(); pc != src.end(); ++pc) {
-        if (IsWhite(*pc))
+        if (IsWhite(*pc)) {
             break;
+        }
         retval.push_back(*pc);
     }
     return retval;

@@ -1,65 +1,109 @@
+#pragma once
 
-#ifndef MACHINIST_PARSEUTILS__
-#define MACHINIST_PARSEUTILS__
-
-#ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
-#endif
 
-using std::unique_ptr;
+#include <memory>
+#include <string>
+#include <vector>
+
+
 struct Info_;
+
 class Emitter_;
+
 class StringTransform_;
+
 
 namespace ParseUtils {
     bool IsWhite(char c);
-    bool StartsWithWhitespace(const string& line);
-    bool IsAllWhite(const string& line);
-    string AfterInitialWhitespace(const string& line);
-    string UntilWhite(const string& src);
-    string TrimWhitespace(const string& src);
 
-    vector<string>::const_iterator ReadHelp(const Info_* parent,
-                                            const Info_* root,
-                                            vector<string>::const_iterator line,
-                                            vector<string>::const_iterator end,
-                                            unique_ptr<Info_>* dst,
-                                            vector<Handle_<Info_>>* local_conditions = 0);
+    bool StartsWithWhitespace(const std::string &line);
 
-    vector<string>::const_iterator ReadInsert(const Info_* parent,
-                                              const Info_* root,
-                                              vector<string>::const_iterator line,
-                                              vector<string>::const_iterator end,
-                                              unique_ptr<Info_>* dst);
+    bool IsAllWhite(const std::string &line);
 
-    bool AddNonempty(Info_* info, const string& tag, const string& val);
+    std::string AfterInitialWhitespace(const std::string &line);
 
-    vector<string>::const_iterator ReadCondition(const Info_* parent,
-                                                 vector<string>::const_iterator line,
-                                                 vector<string>::const_iterator end,
-                                                 Handle_<Info_>* dst);
+    std::string UntilWhite(const std::string &src);
 
-    vector<string>::const_iterator ReadLink(const Info_* parent,
-                                            vector<string>::const_iterator line,
-                                            vector<string>::const_iterator end,
-                                            Handle_<Info_>* dst);
+    std::string TrimWhitespace(const std::string &src);
+
+
+    std::vector<std::string>::const_iterator
+    ReadHelp(const Info_ *parent,
+             const Info_ *root,
+             std::vector<std::string>::const_iterator line,
+             std::vector<std::string>::const_iterator end,
+             std::unique_ptr<Info_> *dst,
+             std::vector<Handle_ < Info_>
+
+    >*
+    local_conditions = 0
+    );
+
+
+    std::vector<std::string>::const_iterator
+    ReadInsert(const Info_ *parent,
+               const Info_ *root,
+               std::vector<std::string>::const_iterator line,
+               std::vector<std::string>::const_iterator end,
+               std::unique_ptr<Info_> *dst);
+
+
+    bool
+    AddNonempty(Info_ *info,
+                const std::string &tag,
+                const std::string &val);
+
+
+    std::vector<std::string>::const_iterator
+    ReadCondition(const Info_ *parent,
+                  std::vector<std::string>::const_iterator line,
+                  std::vector<std::string>::const_iterator end,
+                  Handle_ <Info_> *dst);
+
+
+    std::vector<std::string>::const_iterator
+    ReadLink(const Info_ *parent,
+             std::vector<std::string>::const_iterator line,
+             std::vector<std::string>::const_iterator end,
+             Handle_ <Info_> *dst);
+
 
     // support output too
-    string GetMandatory(const Info_& info, const string& child);
-    string GetOptional(const Info_& info, const string& child);
-    string EmbeddableForm(const string& src); // strips out things that cannot be in a C++ identifier
-    string HtmlSafe(const string& src);       // makes embeddable within HTML
-    string TexSafe(const string& src);        // makes embeddable within TeX
-    string Condensed(const string& src);
+    std::string GetMandatory(const Info_ &info, const std::string &child);
 
-    string WithParentName(const Info_& src);      // substitutes parent name for '$'
-    string WithGrandparentName(const Info_& src); // substitutes grandparent name for '$'
+    std::string GetOptional(const Info_ &info, const std::string &child);
+
+    std::string EmbeddableForm(
+            const std::string &src);                                     // strips out things that cannot be in a C++ identifier
+    std::string
+    HtmlSafe(const std::string &src);                                           // makes embeddable within HTML
+    std::string
+    TexSafe(const std::string &src);                                            // makes embeddable within TeX
+    std::string Condensed(const std::string &src);
+
+    std::string PascalCase(const std::string &src);
+
+    std::string CamelCase(const std::string &src);
+
+    std::string SnakeCase(const std::string &src);
+
+    std::string UpperCase(const std::string &src);
+
+    std::string LowerCase(const std::string &src);
+
+    std::string
+    WithParentName(const Info_ &src);                                           // substitutes parent name for '$'
+    std::string
+    WithGrandparentName(const Info_ &src);                                      // substitutes grandparent name for '$'
 
     // one kind of emitter just wraps a function(Info_)
-    typedef string (*emit_from_info_t)(const Info_&);
-    Emitter_* EmitUnassisted(emit_from_info_t func);
-    typedef string (*emit_from_string_t)(const string&);
-    StringTransform_* EmitTransform(emit_from_string_t func);
-} // namespace ParseUtils
+    typedef std::string (*emit_from_info_t)(const Info_ &);
 
-#endif
+    Emitter_ *EmitUnassisted(emit_from_info_t func);
+
+    typedef std::string (*emit_from_string_t)(const std::string &);
+
+    StringTransform_ *EmitTransform(emit_from_string_t func);
+
+}  // namespace ParseUtils
