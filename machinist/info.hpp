@@ -1,74 +1,51 @@
-#pragma once
 
+#ifndef MACHINIST_INFO__
+#define MACHINIST_INFO__
+
+#ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
+#endif
 
 #include <map>
 #include <string>
-#include <vector>
 
+using std::multimap;
 
 // Info_ structure contains the high-level description of an object
-//
 struct Info_ {
-    Info_(const Info_ *parent,
-          const Info_ *root,
-          const std::string &content)
-            : content_(content), parent_(parent), root_(root) {
-        if (!root) {
+    Info_(const Info_* parent, const Info_* root, const string& content)
+        : parent_(parent), root_(root), content_(content) {
+        if (!root)
             root_ = this;
-        }
     }
-
-
-    std::string content_;                                                           // content at this level
-    std::multimap<std::string, Handle_<Info_> > children_;
-    const Info_ *parent_;
-    const Info_ *root_;
+    string content_; // content at this level
+    multimap<string, Handle_<Info_>> children_;
+    const Info_* parent_;
+    const Info_* root_;
 };
 
-
 namespace Info {
-    bool
-    IsRoot(const Info_ &i);
-
-
+    bool IsRoot(const Info_& i);
     // relies on an internal parser registry for each type
-    //
-    Info_ *
-    Parse(const std::string &type,
-          const std::string &name,
-          const std::vector<std::string> &content);
-
+    Info_* Parse(const string& type, const string& name, const vector<string>& content);
 
     struct Parser_ {
-        virtual
-        ~Parser_();
-
-        virtual
-        Info_ *
-        operator()(const std::string &info_name, const std::vector<std::string> &content) const = 0;
+        virtual ~Parser_();
+        virtual Info_* operator()(const string& info_name, const vector<string>& content) const = 0;
     };
 
-
-    void
-    RegisterParser(const std::string &info_type,
-                   const Parser_ &parser);                // parser:  assumed to be a file static -- we hold a pointer to the parser
-
+    void RegisterParser(const string& info_type,
+                        const Parser_& parser); // assumed to be a file static -- we hold a pointer to the parser
 
     struct Path_ {
-        Path_(const std::string &text);                                                 // parses a path -- '/' is the separator
-
-        const Info_ &
-        operator()(const Info_ &here, bool quiet) const;
-
         bool absolute_;
-        std::vector<std::string> childNames_;
+        vector<string> childNames_;
+        Path_(const string& text); // parses a path -- '/' is the separator
+        const Info_& operator()(const Info_& here, bool quiet) const;
     };
 
-
     // a generally useful function
-    Handle_<Info_>
-    MakeLeaf(const Info_ *parent,
-             const Info_ *root,
-             const std::string &content);
-}
+    Handle_<Info_> MakeLeaf(const Info_* parent, const Info_* root, const string& content);
+} // namespace Info
+
+#endif

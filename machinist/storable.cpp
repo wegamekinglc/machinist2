@@ -1,17 +1,17 @@
 
 // parse storable mark-up, emit results
 
-// this source file has no associated header
-#include "info.hpp"
-#include "template.hpp"
+// this machinist file has no associated header
 #include "emitter.hpp"
-#include "parseutils.hpp"
 #include "file.hpp"
+#include "info.hpp"
+#include "parseutils.hpp"
+#include "template.hpp"
 
 using namespace ParseUtils;
 
 /* Mark-up format is exactly that of a settings!
-*/
+ */
 
 namespace {
     static const string HELP("help");
@@ -19,7 +19,7 @@ namespace {
     static const string MEMBER("member");
     static const string START_MEMBERS("&members");
     static const string START_CONDITIONS("&conditions");
-    static const string IS(" is ");    // includes space separators, meaning tabs won't be recognizes
+    static const string IS(" is "); // includes space separators, meaning tabs won't be recognizes
     static const string TYPE("type");
     static const string SUBTYPE("subtype");
     static const string DIMENSION("dimension");
@@ -28,40 +28,27 @@ namespace {
     static const string MULTIPLE("multiple");
     static const string OPTIONAL("optional");
     static const string DEFAULT("default");
-    static const string SETTINGS("settings");    // because we re-use the settings parser
+    static const string SETTINGS("settings"); // because we re-use the settings parser
     static const string STORABLE("storable");
     static const string RECORD("record");
 
     struct ParseStorable_ : Info::Parser_ {
-        ParseStorable_() {
-            Info::RegisterParser(STORABLE, *this);
-        }
+        ParseStorable_() { Info::RegisterParser(STORABLE, *this); }
 
-        Info_ *operator()
-                (const string &info_name,
-                 const vector <string> &content)
-        const {
+        Info_* operator()(const string& info_name, const vector<string>& content) const {
             // settings parser should now be registered
             return Info::Parse(SETTINGS, info_name, content);
         }
     };
+    const ParseStorable_ TheParser;
 
-    static const ParseStorable_ TheParser;
-
-
-//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
 
     struct MakeStorableEmitter_ : Emitter::Source_ {
-        MakeStorableEmitter_() {
-            Emitter::RegisterSource(STORABLE, *this);
-        }
-
-        Emitter::Funcs_ Parse
-                (const vector <string> &lib,
-                 const string &path)
-        const {
+        MakeStorableEmitter_() { Emitter::RegisterSource(STORABLE, *this); }
+        Emitter::Funcs_ Parse(const vector<string>& lib, const string& path) const {
             // start with the library
-            vector <string> tLines(lib);
+            vector<string> tLines(lib);
             // add the template
             File::Read(path + "Storable.mgt", &tLines);
             auto retval = Template::Parse(tLines);
@@ -75,7 +62,5 @@ namespace {
             return retval;
         }
     };
-
-    static MakeStorableEmitter_ TheEmitter_;
-}    // leave local
-
+    const MakeStorableEmitter_ TheEmitter_;
+} // namespace

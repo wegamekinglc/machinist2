@@ -1,291 +1,161 @@
+
 #include "config.hpp"
-
-HERE
-
-#include "info.hpp"
 #include "file.hpp"
 #include "template.hpp"
-
-#include <cstddef>
 #include <functional>
 #include <iostream>
 #include <numeric>
-#include <regex>
-#include <sstream>
-#include <string>
-#include <vector>
 
+/* the format for config files is minimal:
+a line beginning with a tab names an emitter, which will be associated with the current markup type and file namer
+a line beginning with "->" and containing '%' or '#' changes the current file namer:  the info name will be substituted
+for the '#' to create a file name any other nonblank line changes the current markup type
 
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-//  the format for config files is minimal:
-//  a line beginning with a tab names an emitter, which will be associated with the current markup type and file namer
-//  a line beginning with "->" and containing '%' or '#' changes the current file namer:  the info name will be substituted for the '#' to create a file name
-//  any other nonblank line changes the current markup type
-//
-//  e.g.
-//  Enum
-//  ->MG_#.cpp
-//      EnumCppSource
-//  ->MG_#.h
-//      EnumCppClass
-//      EnumCppMoreHeader
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-
+e.g.
+Enum
+->MG_#.cpp
+        EnumCppSource
+->MG_#.h
+        EnumCppClass
+        EnumCppMoreHeader
+*/
 
 namespace {
-
-    FileSpec_t
-    NamesFile(const std::string &line, bool targets_only = false) {
-        bool result = line.size() > 3 && line[1] == '>' && line.find_first_of("#%") != line.npos;
-        if (!result) {
-            return FileSpec_t::Other;
-        }
-
-        switch (line[0]) {
-            case '=' : {
-                return FileSpec_t::Public;
-            }
-
-            case '-' : {
-                return FileSpec_t::Private;
-            }
-
-            case '|' : {
-                return FileSpec_t::Data;
-            }
-
-
-            default : {
-                return FileSpec_t::Other;
-            }
-        }
+    bool NamesFile(const string& line) {
+        return line.size() > 3 && line[0] == '-' && line[1] == '>' && line.find_first_of("#%") != std::string::npos;
     }
 
+    bool NamesSources(const string& line) { return line.size() > 3 && line[0] == '<' && line[1] == '-'; }
 
-    bool
-    NamesSources(const std::string &line) {
-        return line.size() > 3 &&
-               line[0] == '<' &&
-               line[1] == '-';
-    }
-
-
-    std::vector<std::string>
-    SourcePatterns(const std::string &line, std::vector<std::string> *reject) {
-        std::string rest = line.substr(2);
-        std::vector<std::string> retval;
+    vector<string> SourcePatterns(const string& line, vector<string>* reject) {
+        string rest = line.substr(2);
+        vector<string> ret_val;
         bool rejecting = false;
         while (!rest.empty()) {
             auto stop = rest.find_first_of(";!");
-            (rejecting ? reject : &retval)->push_back(rest.substr(0, stop));
-            if (stop == std::string::npos) {
+            (rejecting ? reject : &ret_val)->push_back(rest.substr(0, stop));
+            if (stop == string::npos)
                 rest.clear();
-            } else {
-                if (rest[stop] == '!') {
+            else {
+                if (rest[stop] == '!')
                     rejecting = true;
-                }
                 rest = rest.substr(stop + 1);
             }
         }
-        return retval;
+        return ret_val;
     }
 
-
-    std::vector<std::string>
-    split(const std::string &input, char sep, std::vector<std::string> sofar = std::vector<std::string>()) {
-        auto bar = input.find(sep);
-        if (bar == std::string::npos) {
-            sofar.push_back(input);
-            return sofar;
+    vector<string> split(const string &input, vector<string> so_far = vector<string>()) {
+        auto bar = input.find(124);
+        if (bar == string::npos) {
+            so_far.push_back(input);
+            return so_far;
         }
-        sofar.push_back(input.substr(0, bar));
-        return split(input.substr(bar + 1), sep, sofar);
+        so_far.push_back(input.substr(0, bar));
+        return split(input.substr(bar + 1), so_far);
     }
 
-
-    void
-    CommitAndReset(Config_ *dst,
-                   const std::string &type,
-                   Config_::Output_ *contrib) {
+    void CommitAndReset(Config_* dst, const string& type, Config_::Output_* contrib) {
         if (!contrib->emitters_.empty()) {
-            for (auto t: split(type, '|')) {
+            for (const auto& t : split(type))
                 dst->vals_[t].push_back(*contrib);
-            }
             contrib->emitters_.clear();
         }
     }
 
-
-    bool
-    StartsWithBackquote(const std::string &line) {
-        auto nonblank = line.find_first_not_of(" \t");
-
-        return nonblank == std::string::npos                            // all blank
-               || line[nonblank] == '`';
+    bool StartsWithBackQuote(const string& line) {
+        auto non_blank = line.find_first_not_of(" \t");
+        return non_blank == string::npos // all blank
+               || line[non_blank] == '`';
     }
 
+    const string FILENAME_FUNC("__OutputFile");
 
-    static const std::string FILENAME_FUNC("__OutputFilename");
-
-
-    std::string
-    AddEnvironment(const std::string &src,
-                   std::size_t offset = 0,
-                   const std::string &sofar = std::string()) {
+    string AddEnvironment(const string& src, int offset = 0, const string& so_far = string()) {
         auto start = src.find("$(", offset);
-        if (start == std::string::npos) {
-            return sofar + src.substr(offset);
-        }
+        if (start == string::npos)
+            return so_far + src.substr(offset);
         start += 2;
-        auto stop = src.find(")", start);
-        REQUIRE(stop != std::string::npos, "Nonterminated environment variable");
-        return AddEnvironment(src, stop + 1, sofar + EnvironmentValue(src.substr(start, stop - start)));
+        auto stop = src.find(')', start);
+        REQUIRE(stop != string::npos, "Non-terminated environment variable");
+        return AddEnvironment(src, static_cast<int>(stop + 1), so_far + EnvironmentValue(src.substr(start, stop - start)));
     }
+} // namespace
 
-
-    void
-    ToOS(std::string *s) {
-        for (auto &c: *s) {
-            if (c == '/' || c == '\\') {
-                c = OS_SEP;
-            }
-        }
-    }
-
-}  // namespace <un-named>
-
-
-
-Config_ Config::
-Read(const std::string &filename, bool targets_only) {
+Config_ Config::Read(const string& filename) {
+    vector<string> src;
     std::cout << "Reading configuration from " << filename << "\n";
-
-    std::vector<std::string> src;
     File::Read(filename, &src);
-
-    Config_ retval;
-    retval.ownPath_ = File::PathOnly(filename);
-    retval.targetsOnly_ = targets_only;
-    std::string theType;
-    std::vector<std::size_t> theSources;
+    Config_ ret_val;
+    ret_val.ownPath_ = File::PathOnly(filename);
+    string theType;
+    vector<int> theSources;
     Config_::Output_ theFile;
 
-    for (auto pl = src.begin(); pl != src.end(); ++pl) {
-        const std::string &line = *pl;
-        if (line.empty() || StartsWithBackquote(line)) {
+    for (auto & line : src) {
+        if (line.empty() || StartsWithBackQuote(line))
             continue;
-        } else if (line[0] == '@') {
-            retval.templatePath_ = AddEnvironment(line.substr(1));
-            ToOS(&retval.templatePath_);
+        else if (line[0] == '@') {
+            ret_val.templatePath_ = AddEnvironment(line.substr(1));
         } else if (line[0] == '\t') {
             if (!theType.empty()) {
+                REQUIRE(!theFile.dst_.funcs_.empty(),
+                        "Nonempty file namer must be supplied before emitters can be assigned to it");
                 // add emitters for this type
                 theFile.emitters_.push_back(line.substr(1));
-
                 REQUIRE(!theFile.emitters_.back().empty(), "Emitter name cannot be empty");
             } else if (!theSources.empty()) {
-                const std::string token = line.substr(1);
-
+                const string token = line.substr(1);
                 // add start/stop tokens for these sources
-                for (auto ps = theSources.begin(); ps != theSources.end(); ++ps) {
-                    auto &dst = retval.sources_[*ps];
-                    if (dst.startToken_.empty()) {
+                for (auto source : theSources) {
+                    auto& dst = ret_val.sources_[source];
+                    if (dst.startToken_.empty())
                         dst.startToken_ = token;
-                    } else {
+                    else {
                         REQUIRE(dst.stopToken_.empty(), "Too many tokens; can only specify start/stop");
-
                         dst.stopToken_ = token;
                     }
                 }
             } else {
                 REQUIRE(0, "Mark-up type must be supplied before emitters can be assigned to it");
             }
-        } else if (NamesFile(line) != FileSpec_t::Other) {
+        } else if (NamesFile(line)) {
             REQUIRE(!theType.empty(), "Mark-up type must be supplied before file namers can be assigned to it");
-
             // store the previous file output
-            CommitAndReset(&retval, theType, &theFile);
-            theFile.filespec_ = NamesFile(line, true);
+            CommitAndReset(&ret_val, theType, &theFile);
             auto func = line;
             auto hash = line.find('#');
-            if (hash != std::string::npos) {
+            if (hash != string::npos)
                 func = line.substr(0, hash) + "%_()" + line.substr(hash + 1);
-            }
-
-            // wrap it into a function definition to parse, then fish out the result
+            // turn it into a template declaration and parse it
             auto bang = func.find('>');
             func = "%:" + FILENAME_FUNC + ":" + func.substr(bang + 1) + '`';
-            auto temp = Template::Parse(std::vector<std::string>(1, func));
-            theFile.fnFunc_ = temp.ofInfo_[FILENAME_FUNC];
+            theFile.dst_.funcs_ = Template::Parse(vector<string>(1, func)); // has access to built-ins
             theSources.clear();
         } else if (NamesSources(line)) {
             theSources.clear();
-            std::vector<std::string> reject;
+            vector<string> reject;
             auto patterns = SourcePatterns(line, &reject);
-            for (auto pp = patterns.begin(); pp != patterns.end(); ++pp) {
-                theSources.push_back(retval.sources_.size());
-                retval.sources_.push_back(*pp);
-                retval.sources_.back().rejectPatterns_ = reject;
+            for (auto & pattern : patterns) {
+                theSources.push_back(static_cast<int>(ret_val.sources_.size()));
+                ret_val.sources_.emplace_back(pattern);
+                ret_val.sources_.back().rejectPatterns_ = reject;
             }
             // theSources keeps locations to which start/stop tokens can be written
         } else {
             // store the previous file output
-            CommitAndReset(&retval, theType, &theFile);
+            CommitAndReset(&ret_val, theType, &theFile);
+            theFile.dst_.funcs_.clear();
             theType = line;
             theSources.clear();
         }
     }
-
     // store the tail
-    CommitAndReset(&retval, theType, &theFile);
-
-    return retval;
+    CommitAndReset(&ret_val, theType, &theFile);
+    return ret_val;
 }
 
-
-//void
-//Config ::
-//Print(const Config_& cf, bool to_cerr)
-//{
-//    auto& dst = to_cerr ? std::cerr : std::cout;
-//    for (auto s : cf.sources_)
-//    {
-//        dst << "Source is:\n";
-//        dst << "\tmatch '" << s.filePattern_ << "'\n";
-//        dst << "\treject ";
-//        for (auto r : s.rejectPatterns_)
-//        {
-//            dst << "'" << r << "'";
-//        }
-//        dst << "\n\tin (" << s.startToken_ << ", " << s.stopToken_ << ")\n";
-//    }
-//    for (auto v : cf.vals_)
-//    {
-//        dst << v.first << " -> \n";
-//        for (auto o : v.second)
-//        {
-//            dst << "\t " << (o.isPublic_ ? '=' : '-') << ">" << " (namer here) " << " <- \n";
-//            for (auto e :o.emitters_)
-//            {
-//                dst << "\t\t <- " << e << "\n";
-//            }
-//        }
-//    }
-//    dst << "Own path = " << cf.ownPath_ << "\n";
-//    dst << "Template path = " << cf.templatePath_ << std::endl;
-//}
-
-
-std::string
-Config_::Output_::
-FileName(const Info_ &info, const Emitter::Funcs_ &funcs) const {
-    auto vs = (*fnFunc_)(info, funcs);
-    std::string retval = std::accumulate(vs.begin(), vs.end(), std::string());
-
-    REQUIRE(retval.find_first_not_of(" \t\n") != std::string::npos,
-            "Filename must have non-whitespace (for '" + info.content_ + "')");
-
-    return retval;
+string Config_::Namer_::operator()(const Info_& info) const {
+    auto vs = Emitter::Call(info, funcs_, FILENAME_FUNC);
+    return std::accumulate(vs.begin(), vs.end(), string());
 }
