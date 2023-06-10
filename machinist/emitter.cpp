@@ -7,14 +7,12 @@
 #include <regex>
 
 std::vector<std::string> Emitter::Call(const Info_& arg, const Funcs_& lib, const std::string& which) {
-    auto pf = lib.ofInfo_.find(which);
-    if (pf == lib.ofInfo_.end()) {
-        // can't find the function -- is there a transform-of-contents?
-        auto pt = lib.ofString_.find(which);
-        REQUIRE(pt != lib.ofString_.end(), "Can't find emitter function '" + which + "'");
+    if (auto pf = lib.ofInfo_.find(which); pf != lib.ofInfo_.end())
+        return (*pf->second)(arg, lib);
+    // can't find the function -- is there a transform-of-contents?
+    if (auto pt = lib.ofString_.find(which); pt != lib.ofString_.end())
         return (*pt->second)(arg.content_, lib);
-    }
-    return (*pf->second)(arg, lib);
+    THROW("Can't find emitter function '" + which + "'");
 }
 
 std::vector<std::string> Emitter::CallTransform(const std::string& src, const Funcs_& lib, const std::string& which) {
