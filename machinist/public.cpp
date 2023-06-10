@@ -761,7 +761,7 @@ namespace {
         std::string s = t;
         switch (Dimension(src)) {
         case 1:
-            s = "std::vector of " + s + "s";
+            s = "vector of " + s + "s";
             break;
         case 2:
             s = "matrix of " + s + "s";
