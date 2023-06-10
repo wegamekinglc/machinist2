@@ -1,9 +1,10 @@
 
 #include "handle.hpp"
 
+
+std::string EnvironmentValue(const std::string& name) {
 #if defined(_MSC_VER)
-string EnvironmentValue(const string& name) {
-    string retval;
+    std::string retval;
     char* temp;
     size_t sz;
     if (_dupenv_s(&temp, &sz, name.c_str()) != 0 || !temp)
@@ -11,17 +12,10 @@ string EnvironmentValue(const string& name) {
     retval = temp;
     free(temp);
     return retval;
-}
 #else
-#include <cstdlib>
-string EnvironmentValue(const string& name) {
-    string retval;
+    std::string retval;
     char* ret = getenv(name.c_str());
-    if (ret == nullptr) {
-        THROW("Can't find '" + name + "' in environment");
-    } else {
-        retval = string(ret);
-    }
-    return retval;
-}
+    REQUIRE(ret, "Can't find '" + name + "' in environment")
+    return std::string(ret);
 #endif
+}

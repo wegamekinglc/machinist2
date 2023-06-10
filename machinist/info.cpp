@@ -16,8 +16,8 @@ bool Info::IsRoot(const Info_& i) {
 Info::Parser_::~Parser_() {}
 
 namespace {
-    map<string, const Info::Parser_*>& TheParsers() {
-        static map<string, const Info::Parser_*> RETVAL;
+    map<std::string, const Info::Parser_*>& TheParsers() {
+        static map<std::string, const Info::Parser_*> RETVAL;
         return RETVAL;
     }
 
@@ -34,7 +34,7 @@ namespace {
     */
     // top-level ownval (=info_name) comes from file name or first line of mark-up block, not seen here
 
-    int Indent(const string& s) {
+    int Indent(const std::string& s) {
         int retval = 0;
         for (auto pc = s.begin(); pc != s.end(); ++pc, ++retval)
             if (*pc != '\t')
@@ -44,9 +44,9 @@ namespace {
 
     Info_* XParseRaw(const Info_* parent,
                      const Info_* root,
-                     const string& info_name,
-                     vector<string>::const_iterator& line,
-                     vector<string>::const_iterator end,
+                     const std::string& info_name,
+                     std::vector<std::string>::const_iterator& line,
+                     std::vector<std::string>::const_iterator end,
                      int tab_offset) {
         unique_ptr<Info_> retval(new Info_(parent, root, info_name));
         for (;;) {
@@ -64,9 +64,9 @@ namespace {
         }
     }
 
-    Info_* ParseRaw(const string& info_name, const vector<string>& content) {
+    Info_* ParseRaw(const std::string& info_name, const std::vector<std::string>& content) {
         for (auto pc = content.begin(); pc != content.end(); ++pc)
-            if (pc->find(':') == string::npos)
+            if (pc->find(':') == std::string::npos)
                 return 0;
         // if any line does not contain a colon, then this function returns NULL and we can try some other parser
         // if every line contains a colon, we will try to parse, and throw an exception on failure
@@ -85,7 +85,7 @@ namespace {
     }
 } // namespace
 
-Info_* Info::Parse(const string& type, const string& name, const vector<string>& content) {
+Info_* Info::Parse(const std::string& type, const std::string& name, const std::vector<std::string>& content) {
     if (Info_* raw = ParseRaw(name, content))
         return raw;
     // not in generic format; find the specialized parser
@@ -95,20 +95,20 @@ Info_* Info::Parse(const string& type, const string& name, const vector<string>&
     return retval.release();
 }
 
-void Info::RegisterParser(const string& type, const Info::Parser_& parser) {
+void Info::RegisterParser(const std::string& type, const Info::Parser_& parser) {
     std::cout << "Registering parser for " << type << "\n";
     assert(!TheParsers().count(type));
     TheParsers()[type] = &parser;
 }
 
-Info::Path_::Path_(const string& src) : absolute_(false) {
+Info::Path_::Path_(const std::string& src) : absolute_(false) {
     for (auto start = src.begin(); start != src.end(); ++start) {
         if (*start == '/') {
             REQUIRE(start == src.begin(), "'//' not allowed in a path");
             absolute_ = true;
         } else {
             auto stop = find(start, src.end(), '/');
-            childNames_.push_back(string(start, stop));
+            childNames_.push_back(std::string(start, stop));
             start = stop; // don't need to skip the '/', the increment will do that
             if (start == src.end())
                 break;
@@ -117,12 +117,12 @@ Info::Path_::Path_(const string& src) : absolute_(false) {
 }
 
 const Info_& Info::Path_::operator()(const Info_& here, bool quiet) const {
-    static const Handle_<Info_> FALSE = MakeLeaf(nullptr, nullptr, string());
+    static const Handle_<Info_> FALSE = MakeLeaf(nullptr, nullptr, std::string());
     const Info_* retval = absolute_ ? here.root_ : &here;
     for (auto pc = childNames_.begin(); pc != childNames_.end(); ++pc) {
         const char step = '1' + (pc - childNames_.begin());
         if (!retval) {
-            REQUIRE(quiet, "Path navigation failed before step " + string(1, step));
+            REQUIRE(quiet, "Path navigation failed before step " + std::string(1, step));
             return *FALSE;
         }
         if (*pc == "..") {
@@ -132,10 +132,10 @@ const Info_& Info::Path_::operator()(const Info_& here, bool quiet) const {
             auto cr = retval->children_.equal_range(*pc);
             if (cr.first == cr.second) {
                 REQUIRE(quiet,
-                        "Path navigation failed at step " + string(1, step) + ":  child '" + *pc + "' not found");
+                        "Path navigation failed at step " + std::string(1, step) + ":  child '" + *pc + "' not found");
                 return *FALSE;
             }
-            REQUIRE(cr.first == --cr.second, "Path navigation failed at step " + string(1, step) + ":  child '" + *pc +
+            REQUIRE(cr.first == --cr.second, "Path navigation failed at step " + std::string(1, step) + ":  child '" + *pc +
                                                  "' not unique"); // Next(cr.first) doesn't work due to compiler bug
             retval = cr.first->second.get();
         }
@@ -147,6 +147,6 @@ const Info_& Info::Path_::operator()(const Info_& here, bool quiet) const {
     return *retval;
 }
 
-Handle_<Info_> Info::MakeLeaf(const Info_* parent, const Info_* root, const string& content) {
+Handle_<Info_> Info::MakeLeaf(const Info_* parent, const Info_* root, const std::string& content) {
     return new Info_(parent, root, content);
 }

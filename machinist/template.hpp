@@ -15,7 +15,7 @@ namespace Emitter {
 }
 
 namespace Template {
-    Emitter::Funcs_ Parse(const vector<string>& src);
+    Emitter::Funcs_ Parse(const std::vector<std::string>& src);
 
     void SetGlobalCount(int c);
 } // namespace Template
@@ -51,7 +51,7 @@ text to emit equivalent to ?~{test}.{emit}
 "%|{text1}{text2} first emits text1, then iff it is empty also emits text2
         equivalent to text1%~{text1}{text2}
 "%~{test}pattern{emit}" first evaluates the text to test, then if it matches the given pattern, returns the text to emit
-        if the pattern is omitted, "^$" is used -- i.e., only the empty string is matched, and this reduces the the
+        if the pattern is omitted, "^$" is used -- i.e., only the empty std::string is matched, and this reduces the the
 'not' operator braces within the pattern must be escaped with '%'
 "%*[child_name]{emit}" concatenates the emitted text for each child of the given name
         the emit function is called repeatedly, with the input info set to each child in turn

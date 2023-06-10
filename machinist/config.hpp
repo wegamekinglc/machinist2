@@ -1,6 +1,4 @@
-
-#ifndef MACHINIST_CONFIG__
-#define MACHINIST_CONFIG__
+#pragma once
 
 #ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
@@ -30,32 +28,30 @@ using std::map;
 
 struct Config_ {
     struct Source_ {
-        string filePattern_;
-        vector<string> rejectPatterns_;
-        string startToken_; // if empty, start of file
-        string stopToken_;  // if empty, end of file
-        Source_(const string& pattern) : filePattern_(pattern) {}
+        std::string filePattern_;
+        std::vector<std::string> rejectPatterns_;
+        std::string startToken_; // if empty, start of file
+        std::string stopToken_;  // if empty, end of file
+        Source_(const std::string& pattern) : filePattern_(pattern) {}
     };
 
     struct Namer_ // information to generate a filename
     {
         Emitter::Funcs_ funcs_;
-        string operator()(const Info_& info) const;
+        std::string operator()(const Info_& info) const;
     };
 
     struct Output_ {
         Namer_ dst_;
-        vector<string> emitters_; // referenced by name
+        std::vector<std::string> emitters_; // referenced by name
     };
 
-    vector<Source_> sources_;
-    map<string, vector<Output_>> vals_; // string key is the type of input ("Enum" above)
-    string ownPath_;
-    string templatePath_; // relative to config file, not to working directory!
+    std::vector<Source_> sources_;
+    map<std::string, std::vector<Output_>> vals_; // std::string key is the type of input ("Enum" above)
+    std::string ownPath_;
+    std::string templatePath_; // relative to config file, not to working directory!
 };
 
 namespace Config {
-    Config_ Read(const string& filename);
+    Config_ Read(const std::string& filename);
 }
-
-#endif

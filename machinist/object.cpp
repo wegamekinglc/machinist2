@@ -28,45 +28,45 @@ using std::pair;
 */
 
 namespace {
-    static const string HELP("help");
-    static const string VERSION("version");
-    static const string CONDITION("condition");
-    static const string MEMBER("member");
-    static const string START_MEMBERS("&members");
-    static const string START_CONDITIONS("&conditions");
-    static const string IS(" is "); // includes space separators, meaning tabs won't be recognizes
-    static const string TYPE("type");
-    static const string SUBTYPE("subtype");
-    static const string DIMENSION("dimension");
-    static const string MULTIPLE("multiple");
-    static const string OPTIONAL("optional");
-    static const string REPEAT("repeat");
-    static const string FROM("from");
-    static const string DEFAULT("default");
-    static const string OBJECT("object");
-    static const string IS_RECORD("is_record");
-    static const string IS_STORABLE("is_storable");
-    static const string IS_SETTINGS("is_settings");
-    static const string MANUAL("manual");
-    static const string SETTINGS("settings");
-    static const string STORABLE("storable");
-    static const string RECORD("record");
+    static const std::string HELP("help");
+    static const std::string VERSION("version");
+    static const std::string CONDITION("condition");
+    static const std::string MEMBER("member");
+    static const std::string START_MEMBERS("&members");
+    static const std::string START_CONDITIONS("&conditions");
+    static const std::string IS(" is "); // includes space separators, meaning tabs won't be recognizes
+    static const std::string TYPE("type");
+    static const std::string SUBTYPE("subtype");
+    static const std::string DIMENSION("dimension");
+    static const std::string MULTIPLE("multiple");
+    static const std::string OPTIONAL("optional");
+    static const std::string REPEAT("repeat");
+    static const std::string FROM("from");
+    static const std::string DEFAULT("default");
+    static const std::string OBJECT("object");
+    static const std::string IS_RECORD("is_record");
+    static const std::string IS_STORABLE("is_storable");
+    static const std::string IS_SETTINGS("is_settings");
+    static const std::string MANUAL("manual");
+    static const std::string SETTINGS("settings");
+    static const std::string STORABLE("storable");
+    static const std::string RECORD("record");
 
     Info_* NewMember(const Info_* parent,
-                     const string& name,
-                     const string& type,
+                     const std::string& name,
+                     const std::string& type,
                      int dim,
                      bool multiple,
                      bool optional,
-                     const string& subtype,
-                     const string& from_func,
-                     const string& default_val,
+                     const std::string& subtype,
+                     const std::string& from_func,
+                     const std::string& default_val,
                      unique_ptr<Info_>* help) {
         unique_ptr<Info_> retval(new Info_(parent, parent, name));
         retval->children_.insert(make_pair(TYPE, Info::MakeLeaf(retval.get(), retval->root_, type)));
         if (dim > 0)
             retval->children_.insert(
-                make_pair(DIMENSION, Info::MakeLeaf(retval.get(), retval->root_, string(1, '0' + dim))));
+                make_pair(DIMENSION, Info::MakeLeaf(retval.get(), retval->root_, std::string(1, '0' + dim))));
         if (multiple)
             retval->children_.insert(make_pair(MULTIPLE, Info::MakeLeaf(retval.get(), retval->root_, "1")));
         if (optional)
@@ -81,20 +81,20 @@ namespace {
         return retval.release();
     }
 
-    pair<string, bool> NamedArg(const string& src, const string& name) // appends a TRUE flag if it starts at the front
+    pair<std::string, bool> NamedArg(const std::string& src, const std::string& name) // appends a TRUE flag if it starts at the front
     {
         auto keyLoc = src.find(name);
-        if (keyLoc == string::npos)
-            return make_pair(string(), false);
+        if (keyLoc == std::string::npos)
+            return make_pair(std::string(), false);
         return make_pair(UntilWhite(AfterInitialWhitespace(src.substr(keyLoc + name.size()))), keyLoc == 0);
     }
 
-    void SetFlag(Info_* parent, const string& flag) {
+    void SetFlag(Info_* parent, const std::string& flag) {
         parent->children_.insert(make_pair(flag, Info::MakeLeaf(parent, parent->root_, "1")));
     }
 
-    vector<string>::const_iterator
-    ReadFrontMatter(Info_* parent, vector<string>::const_iterator line, vector<string>::const_iterator end) {
+    std::vector<std::string>::const_iterator
+    ReadFrontMatter(Info_* parent, std::vector<std::string>::const_iterator line, std::vector<std::string>::const_iterator end) {
         for (; line != end; ++line) {
             if (line->find(VERSION) == 0)
                 parent->children_.insert(make_pair(
@@ -114,22 +114,22 @@ namespace {
         return line;
     }
 
-    vector<string>::const_iterator ReadMember(const Info_* parent,
-                                              vector<string>::const_iterator line,
-                                              vector<string>::const_iterator end,
+    std::vector<std::string>::const_iterator ReadMember(const Info_* parent,
+                                              std::vector<std::string>::const_iterator line,
+                                              std::vector<std::string>::const_iterator end,
                                               Handle_<Info_>* dst) {
         REQUIRE(!line->empty() && !StartsWithWhitespace(*line), "Expected un-indented line to declare argument");
         auto is = line->find(IS);
         REQUIRE(is != line->npos, "Member needs type declaration using 'is'");
-        const string name = line->substr(0, is);
+        const std::string name = line->substr(0, is);
 
-        string rest = ParseUtils::AfterInitialWhitespace(line->substr(is + IS.size()));
+        std::string rest = ParseUtils::AfterInitialWhitespace(line->substr(is + IS.size()));
         const bool multiple = !rest.empty() && (rest[0] == '+' || rest[0] == '*');
         const bool optional = !rest.empty() && (rest[0] == '?' || rest[0] == '*');
         if (multiple || optional)
             rest = rest.substr(1);                  // eat the quantifier
         auto endType = rest.find_first_of(" \t[+"); // anything that terminates the type
-        const string type = rest.substr(0, endType);
+        const std::string type = rest.substr(0, endType);
         rest = rest.substr(type.size());
         int dim = 0;
         while (rest.substr(0, 2) == "[]") {
@@ -138,10 +138,10 @@ namespace {
         }
         REQUIRE(StartsWithWhitespace(rest), "No space before subtype/from/default");
         rest = ParseUtils::AfterInitialWhitespace(rest);
-        const pair<string, bool> from = NamedArg(rest, FROM);
-        const pair<string, bool> defval = NamedArg(rest, DEFAULT);
-        const string subtype = from.second || defval.second
-                                   ? string() // one of the optional things started at the start of rest
+        const pair<std::string, bool> from = NamedArg(rest, FROM);
+        const pair<std::string, bool> defval = NamedArg(rest, DEFAULT);
+        const std::string subtype = from.second || defval.second
+                                   ? std::string() // one of the optional things started at the start of rest
                                    : UntilWhite(rest);
 
         unique_ptr<Info_> help;
@@ -151,12 +151,12 @@ namespace {
     }
 
     struct ParseObject_ : Info::Parser_ {
-        vector<string> flags_; // will be set in object
-        ParseObject_(const string& type, const vector<string>& flags) : flags_(flags) {
+        std::vector<std::string> flags_; // will be set in object
+        ParseObject_(const std::string& type, const std::vector<std::string>& flags) : flags_(flags) {
             Info::RegisterParser(type, *this);
         }
 
-        Info_* operator()(const string& info_name, const vector<string>& content) const {
+        Info_* operator()(const std::string& info_name, const std::vector<std::string>& content) const {
             unique_ptr<Info_> retval(new Info_(0, 0, info_name));
             auto line = content.begin();
             // read the help
@@ -193,7 +193,7 @@ namespace {
             return retval.release();
         }
     };
-    const ParseObject_ TheParser(OBJECT, vector<string>());
+    const ParseObject_ TheParser(OBJECT, std::vector<std::string>());
     const ParseObject_
         TheSettingsParser(SETTINGS, {IS_SETTINGS}); // "settings" is a synonym for "object" with is_settings set
     const ParseObject_
@@ -205,8 +205,8 @@ namespace {
     // here are all the basic types
     enum { NUMBER = 0, INTEGER, BOOLEAN, STRING, CELL, HANDLE, SETTINGS_, DATE, ENUM, DATETIME, NUM_TYPES };
 
-    int TypeToIndex(const string& type) {
-        static map<string, int> VALS;
+    int TypeToIndex(const std::string& type) {
+        static map<std::string, int> VALS;
         static bool first = true;
         if (first) {
             first = false;
@@ -226,23 +226,23 @@ namespace {
         return pt->second;
     }
 
-    string ScalarCType(const string& type, const string& subtype) {
+    std::string ScalarCType(const std::string& type, const std::string& subtype) {
         const char* RETVAL[NUM_TYPES] = {"double", "int",       "bool",  "String_", "Cell_",
                                          ":::",    "Settings_", "Date_", ":::",     "DateTime_"};
         const int which = TypeToIndex(type);
         switch (which) {
         case HANDLE:
-            return "Handle_<" + (subtype.empty() ? string("Storable") : subtype) + "_>";
+            return "Handle_<" + (subtype.empty() ? std::string("Storable") : subtype) + "_>";
         case SETTINGS_:
         case ENUM:
             return subtype + '_';
         default:
-            return string(RETVAL[which]);
+            return std::string(RETVAL[which]);
         }
     }
 
     int Dimension(const Info_& arg) {
-        const string dim = GetOptional(arg, DIMENSION);
+        const std::string dim = GetOptional(arg, DIMENSION);
         if (dim == "0" || dim.empty())
             return 0;
         if (dim == "1")
@@ -253,11 +253,11 @@ namespace {
 
     bool HasSpecificDefault(const Info_& arg) { return arg.children_.count(DEFAULT) > 0; }
 
-    string SpecificDefault(const Info_& src) {
-        return HasSpecificDefault(src) ? src.children_.find(DEFAULT)->second->content_ : string();
+    std::string SpecificDefault(const Info_& src) {
+        return HasSpecificDefault(src) ? src.children_.find(DEFAULT)->second->content_ : std::string();
     }
 
-    bool HasCanonicalDefault(const string& scalar_type) {
+    bool HasCanonicalDefault(const std::string& scalar_type) {
         switch (TypeToIndex(scalar_type)) {
         case NUMBER:
         case INTEGER:
@@ -269,11 +269,11 @@ namespace {
         return true;
     }
 
-    string CType(const Info_& src);
+    std::string CType(const Info_& src);
     /*	here is the settings version -- we are using the storable version, below
     {
-            const string type = GetMandatory(src, TYPE);
-            const string scalar = ScalarCType(type, GetOptional(src, SUBTYPE));
+            const std::string type = GetMandatory(src, TYPE);
+            const std::string scalar = ScalarCType(type, GetOptional(src, SUBTYPE));
             switch (Dimension(src))
             {
             default:
@@ -284,11 +284,11 @@ namespace {
             }
     }*/
 
-    string ExistenceTest(const Info_& src) { return src.content_ + "_ != " + CType(src) + "()"; }
+    std::string ExistenceTest(const Info_& src) { return src.content_ + "_ != " + CType(src) + "()"; }
 
-    string ExtractorImp(const Info_& src, const string& prefix) {
-        string retval = prefix;
-        string postfix;
+    std::string ExtractorImp(const Info_& src, const std::string& prefix) {
+        std::string retval = prefix;
+        std::string postfix;
         switch (TypeToIndex(GetMandatory(src, TYPE))) {
         case NUMBER:
             retval += "Double";
@@ -339,34 +339,34 @@ namespace {
         }
         return retval + postfix;
     }
-    string Extractor(const Info_& src) { return ExtractorImp(src, "Cell::To"); }
-    string Inserter(const Info_& src) { return ExtractorImp(src, "Cell::From"); }
-    string RecordExtractor(const Info_& src) { return ExtractorImp(src, "Extract"); }
+    std::string Extractor(const Info_& src) { return ExtractorImp(src, "Cell::To"); }
+    std::string Inserter(const Info_& src) { return ExtractorImp(src, "Cell::From"); }
+    std::string RecordExtractor(const Info_& src) { return ExtractorImp(src, "Extract"); }
 
-    string MustExist(const Info_& src) { return GetOptional(src, DEFAULT) == "." ? string() : string("1"); }
+    std::string MustExist(const Info_& src) { return GetOptional(src, DEFAULT) == "." ? std::string() : std::string("1"); }
 
-    string DotValue(const Info_& src) {
-        const string type = GetMandatory(src, TYPE);
-        return !HasCanonicalDefault(type) && SpecificDefault(src) == "." && Dimension(src) == 0 ? ".get()" : string();
+    std::string DotValue(const Info_& src) {
+        const std::string type = GetMandatory(src, TYPE);
+        return !HasCanonicalDefault(type) && SpecificDefault(src) == "." && Dimension(src) == 0 ? ".get()" : std::string();
     }
 
     //--------------------------------------------------------------------------
 
-    string ScalarJType(const string& type, const string& subtype) {
+    std::string ScalarJType(const std::string& type, const std::string& subtype) {
         const char* RETVAL[NUM_TYPES] = {"double", "int", "boolean", "String", "Cell", ":::", ":::", "Date", ":::"};
         const int which = TypeToIndex(type);
         switch (which) {
         case HANDLE:
-            return subtype.empty() ? string("Storable") : subtype;
+            return subtype.empty() ? std::string("Storable") : subtype;
         case ENUM:
         case SETTINGS_:
             return subtype;
         default:
-            return string(RETVAL[which]);
+            return std::string(RETVAL[which]);
         }
     }
-    string JType(const Info_& src) {
-        string retval = ScalarJType(GetMandatory(src, "type"), GetOptional(src, "subtype"));
+    std::string JType(const Info_& src) {
+        std::string retval = ScalarJType(GetMandatory(src, "type"), GetOptional(src, "subtype"));
         for (int dd = Dimension(src); dd > 0; --dd)
             retval = "Array<" + retval + ">";
         return retval;
@@ -374,9 +374,9 @@ namespace {
 
     //--------------------------------------------------------------------------
 
-    string TypeForHelp(const Info_& src) {
-        const string& t = GetMandatory(src, TYPE);
-        string s = t;
+    std::string TypeForHelp(const Info_& src) {
+        const std::string& t = GetMandatory(src, TYPE);
+        std::string s = t;
         switch (Dimension(src)) {
         case 1:
             s = "vector of " + s + "s";
@@ -385,7 +385,7 @@ namespace {
             s = "matrix of " + s + "s";
             break;
         }
-        string sub = GetOptional(src, SUBTYPE);
+        std::string sub = GetOptional(src, SUBTYPE);
         if (!sub.empty()) {
             switch (TypeToIndex(t)) {
                 //			case ENUM:
@@ -403,12 +403,12 @@ namespace {
 
     // Output code for serialization/deserialization
 
-    string IsSettings(const Info_& src) { return TypeToIndex(GetMandatory(src, TYPE)) == SETTINGS_ ? "1" : string(); }
-    string IsEnum(const Info_& src) { return TypeToIndex(GetMandatory(src, TYPE)) == ENUM ? "1" : string(); }
+    std::string IsSettings(const Info_& src) { return TypeToIndex(GetMandatory(src, TYPE)) == SETTINGS_ ? "1" : std::string(); }
+    std::string IsEnum(const Info_& src) { return TypeToIndex(GetMandatory(src, TYPE)) == ENUM ? "1" : std::string(); }
 
-    string NonrepeatingCType(const Info_& src) {
-        const string type = GetMandatory(src, TYPE);
-        const string scalar = ScalarCType(type, GetOptional(src, SUBTYPE));
+    std::string NonrepeatingCType(const Info_& src) {
+        const std::string type = GetMandatory(src, TYPE);
+        const std::string scalar = ScalarCType(type, GetOptional(src, SUBTYPE));
         switch (Dimension(src)) {
         default:
         case 0:
@@ -421,8 +421,8 @@ namespace {
         }
     }
 
-    string CType(const Info_& src) {
-        string retval = NonrepeatingCType(src);
+    std::string CType(const Info_& src) {
+        std::string retval = NonrepeatingCType(src);
         if (src.children_.count(REPEAT))
             return "Vector_<" + (retval.back() == '>' ? retval + ' ' : retval) + ">";
         if (src.children_.count(OPTIONAL) && !src.children_.count(MULTIPLE) && !HasSpecificDefault(src) &&
@@ -431,22 +431,21 @@ namespace {
         return retval;
     }
 
-    string
-    SupplyDefault(const Info_& src) // this routine is also responsible for supplying the leading comma, if needed
+    std::string SupplyDefault(const Info_& src) // this routine is also responsible for supplying the leading comma, if needed
     {
         if (HasSpecificDefault(src)) {
-            const string dv = SpecificDefault(src);
+            const std::string dv = SpecificDefault(src);
             return ", " + (dv == "." ? CType(src) + "()" : SpecificDefault(src));
         } else if (HasCanonicalDefault(GetMandatory(src, TYPE)))
             return ", " + CType(src) + "()"; // i.e., default constructor of the type
         else
-            return string();
+            return std::string();
     }
 
-    string CoerceFromView(const Info_& src) // query view for the desired type
+    std::string CoerceFromView(const Info_& src) // query view for the desired type
     {
-        string type = GetMandatory(src, TYPE);
-        string subtype = GetOptional(src, SUBTYPE);
+        std::string type = GetMandatory(src, TYPE);
+        std::string subtype = GetOptional(src, SUBTYPE);
         if (TypeToIndex(type) == HANDLE) {
             return subtype.empty()
                        ? "Archive::Builder_<>(share, \"" + src.content_ + "\", \"\")"
@@ -455,8 +454,8 @@ namespace {
         if (TypeToIndex(type) == ENUM) {
             return "[](const Archive::View_& src) { return " + subtype + "_(src.AsString()); }";
         }
-        string retval = "std::mem_fn(&Archive::View_::As";
-        string scalar = ScalarCType(type, subtype); // except Settings
+        std::string retval = "std::mem_fn(&Archive::View_::As";
+        std::string scalar = ScalarCType(type, subtype); // except Settings
         if (TypeToIndex(type) == SETTINGS_)
             scalar = "Dictionary";
         if (scalar.substr(0, 5) == "std::")
@@ -485,9 +484,9 @@ namespace {
             Emitter::RegisterSource(STORABLE, *this);
             Emitter::RegisterSource(RECORD, *this);
         }
-        Emitter::Funcs_ Parse(const vector<string>& lib, const string& path) const {
+        Emitter::Funcs_ Parse(const std::vector<std::string>& lib, const std::string& path) const {
             // start with the library
-            vector<string> tLines(lib);
+            std::vector<std::string> tLines(lib);
             // add the template
             std::filesystem::path pl(path);
             File::Read((pl / "Object.mgt").string(), &tLines);

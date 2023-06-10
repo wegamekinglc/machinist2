@@ -23,51 +23,51 @@ because the names themselves can contain spaces) <help> method <code> [switchabl
 */
 
 namespace {
-    static const string ENUMERATION("enumeration");
-    static const string HELP("help");
-    static const string ALTERNATIVE("alternative");
-    static const string DEFAULT("default");
-    static const string METHOD("method");
-    static const string SWITCHABLE("switchable");
-    static const string EXTENSIBLE("extensible");
-    static const string LEGACY("legacy");
-    static const string LONGNAME("longname");
-    static const string ALIAS("alias");
-    static const string NUMERIC("numeric");
+    static const std::string ENUMERATION("enumeration");
+    static const std::string HELP("help");
+    static const std::string ALTERNATIVE("alternative");
+    static const std::string DEFAULT("default");
+    static const std::string METHOD("method");
+    static const std::string SWITCHABLE("switchable");
+    static const std::string EXTENSIBLE("extensible");
+    static const std::string LEGACY("legacy");
+    static const std::string LONGNAME("longname");
+    static const std::string ALIAS("alias");
+    static const std::string NUMERIC("numeric");
 
-    Info_* NewMember(const Info_* parent, bool is_default, string all_names, unique_ptr<Info_>* help) {
+    Info_* NewMember(const Info_* parent, bool is_default, std::string all_names, unique_ptr<Info_>* help) {
         if (is_default)
             std::cout << "Enumeration has default\n";
 
-        string lShort, lLong;
+        std::string lShort, lLong;
         // find any legacy names
         auto lLoc = all_names.find(LEGACY);
-        if (lLoc != string::npos) {
+        if (lLoc != std::string::npos) {
             lShort =
                 AfterInitialWhitespace(all_names.substr(lLoc + LEGACY.size())); // store it here, then split if needed
             all_names = all_names.substr(0, lLoc);
             auto sep = lShort.find('|');
-            if (sep != string::npos) {
+            if (sep != std::string::npos) {
                 lLong = AfterInitialWhitespace(lShort.substr(sep + 1));
                 lShort = lShort.substr(0, sep);
             } else
                 lLong = lShort; // easier output if these always exist together
         }
 
-        string numeric;
+        std::string numeric;
         // find any numeric value
         auto eqLoc = all_names.find('=');
-        if (eqLoc != string::npos) {
+        if (eqLoc != std::string::npos) {
             numeric = AfterInitialWhitespace(all_names.substr(eqLoc + 1));
             all_names = all_names.substr(0, eqLoc);
         }
 
         // split names on whitespace
-        vector<string> names;
-        for (string rest = AfterInitialWhitespace(all_names); !rest.empty();) {
+        std::vector<std::string> names;
+        for (std::string rest = AfterInitialWhitespace(all_names); !rest.empty();) {
             auto stop = find_if(rest.begin(), rest.end(), IsWhite);
-            names.push_back(string(rest.begin(), stop));
-            rest = AfterInitialWhitespace(string(stop, rest.end()));
+            names.push_back(std::string(rest.begin(), stop));
+            rest = AfterInitialWhitespace(std::string(stop, rest.end()));
         }
         REQUIRE(!names.empty() || is_default, "Every alternative needs a name");
 
@@ -91,13 +91,13 @@ namespace {
         return retval.release();
     }
 
-    vector<string>::const_iterator ReadAlternative(const Info_* parent,
-                                                   vector<string>::const_iterator line,
-                                                   vector<string>::const_iterator end,
+    std::vector<std::string>::const_iterator ReadAlternative(const Info_* parent,
+                                                   std::vector<std::string>::const_iterator line,
+                                                   std::vector<std::string>::const_iterator end,
                                                    Handle_<Info_>* dst) {
         REQUIRE(!line->empty() && !StartsWithWhitespace(*line), "Expected un-indented line to declare argument");
-        const string start = UntilWhite(*line);
-        const string rest = line->substr(start.size());
+        const std::string start = UntilWhite(*line);
+        const std::string rest = line->substr(start.size());
 
         unique_ptr<Info_> help;
         line = ReadHelp(0, parent, ++line, end, &help); // fix help's parent later
@@ -108,7 +108,7 @@ namespace {
     struct ParseEnumeration_ : Info::Parser_ {
         ParseEnumeration_() { Info::RegisterParser(ENUMERATION, *this); }
 
-        Info_* operator()(const string& info_name, const vector<string>& content) const {
+        Info_* operator()(const std::string& info_name, const std::vector<std::string>& content) const {
             unique_ptr<Info_> retval(new Info_(0, 0, info_name));
             auto line = content.begin();
             // read the help
@@ -148,39 +148,39 @@ namespace {
     };
     const ParseEnumeration_ TheParser;
 
-    string MaxNumericSentinel(const Info_& src) {
+    std::string MaxNumericSentinel(const Info_& src) {
         int max = -1;
         auto alts = src.children_.equal_range(ALTERNATIVE);
         for (auto ia = alts.first; ia != alts.second; ++ia) {
-            string num = GetOptional(*ia->second, NUMERIC);
+            std::string num = GetOptional(*ia->second, NUMERIC);
             if (num.empty())
                 break;
             int n = std::stoi(num);
             if (n > max)
                 max = n;
         }
-        const int startCount = src.children_.count(LEGACY);
+        const int startCount = static_cast<int>(src.children_.count(LEGACY));
         Template::SetGlobalCount(max < 0 ? startCount : max); // has side effect!
-        return max > 0 ? "__MG_SENTINEL_VAL = " + std::to_string(max) + "\n\t\t" : string();
+        return max > 0 ? "__MG_SENTINEL_VAL = " + std::to_string(max) + "\n\t\t" : std::string();
     }
 
-    string Uppercase(const Info_& src) {
-        string retval(src.content_);
+    std::string Uppercase(const Info_& src) {
+        std::string retval(src.content_);
         transform(retval.begin(), retval.end(), retval.begin(), toupper);
         return retval;
     }
 
-    string SizeBase(const Info_& src) {
+    std::string SizeBase(const Info_& src) {
         if (src.children_.size() < 252)
             return " : char";
-        return string();
+        return std::string();
     }
 
     struct MakeEnumerationEmitter_ : Emitter::Source_ {
         MakeEnumerationEmitter_() { Emitter::RegisterSource(ENUMERATION, *this); }
-        Emitter::Funcs_ Parse(const vector<string>& lib, const string& path) const {
+        Emitter::Funcs_ Parse(const std::vector<std::string>& lib, const std::string& path) const {
             // start with the library
-            vector<string> tLines(lib);
+            std::vector<std::string> tLines(lib);
             // add the template
             std::filesystem::path pl(path);
             File::Read((pl / "Enumeration.mgt").string(), &tLines);

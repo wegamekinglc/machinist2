@@ -46,60 +46,60 @@ separates mandatory from optional inputs <name>[ aka <tempname>] is <type>[<dime
 // with the master name to send to the internal function
 
 namespace {
-    static const string HELP("help");
-    static const string INSERT("insert");
-    static const string INPUT("input");
-    static const string OUTPUT("output");
-    static const string OPTIONAL("optional");
-    static const string CONDITION("condition");
-    static const string START_INPUTS("&inputs");
-    static const string START_OUTPUTS("&outputs");
-    static const string START_OPTIONAL("&optional");
-    static const string START_CONDITIONS("&conditions");
-    static const string IS(" is ");       // includes space separators, meaning tabs won't be recognized
-    static const string AKA(" aka ");     // includes space separators
-    static const string MYNAME("myname"); // internal name
-    static const string TYPE("type");
-    static const string SUBTYPE("subtype");
-    static const string DEFAULT("default");
-    static const string DIMENSION("dimension");
-    static const string GREEDY("greedy");
-    static const string PUBLIC("public");
-    static const string SUPPRESS("suppress");
-    static const string CATEGORY("category");
-    static const string VOLATILE("volatile");
-    static const string IN_TYPE("intype");
-    static const string TRANSLATOR("translator");
-    static const string NOTES("notes");
-    static const string START_NOTES("&notes");
-    static const string LINK("link");
-    static const string START_LINKS("&links");
+    static const std::string HELP("help");
+    static const std::string INSERT("insert");
+    static const std::string INPUT("input");
+    static const std::string OUTPUT("output");
+    static const std::string OPTIONAL("optional");
+    static const std::string CONDITION("condition");
+    static const std::string START_INPUTS("&inputs");
+    static const std::string START_OUTPUTS("&outputs");
+    static const std::string START_OPTIONAL("&optional");
+    static const std::string START_CONDITIONS("&conditions");
+    static const std::string IS(" is ");       // includes space separators, meaning tabs won't be recognized
+    static const std::string AKA(" aka ");     // includes space separators
+    static const std::string MYNAME("myname"); // internal name
+    static const std::string TYPE("type");
+    static const std::string SUBTYPE("subtype");
+    static const std::string DEFAULT("default");
+    static const std::string DIMENSION("dimension");
+    static const std::string GREEDY("greedy");
+    static const std::string PUBLIC("public");
+    static const std::string SUPPRESS("suppress");
+    static const std::string CATEGORY("category");
+    static const std::string VOLATILE("volatile");
+    static const std::string IN_TYPE("intype");
+    static const std::string TRANSLATOR("translator");
+    static const std::string NOTES("notes");
+    static const std::string START_NOTES("&notes");
+    static const std::string LINK("link");
+    static const std::string START_LINKS("&links");
 
-    pair<string, string> NamePair(const string& src) {
+    pair<std::string, std::string> NamePair(const std::string& src) {
         auto aka = src.find(AKA);
-        if (aka == string::npos)
+        if (aka == std::string::npos)
             return make_pair(src, src); // internal and external names are the same
         return make_pair(src.substr(0, aka), src.substr(aka + AKA.size()));
     }
 
     void PopulateArgument(Info_* arg,
-                          const string& name,
-                          const string& type,
+                          const std::string& name,
+                          const std::string& type,
                           int dim,
                           bool greedy,
-                          const string& subtype,
+                          const std::string& subtype,
                           bool optional,
-                          const string& def_val,
-                          const map<string, string>& in_type_translators,
+                          const std::string& def_val,
+                          const map<std::string, std::string>& in_type_translators,
                           unique_ptr<Info_>* help,
-                          const vector<Handle_<Info_>>& conditions,
+                          const std::vector<Handle_<Info_>>& conditions,
                           unique_ptr<Info_>* insert) {
         auto names = NamePair(name);
         arg->content_ = names.first;
         arg->children_.insert(make_pair(MYNAME, Info::MakeLeaf(arg, arg->root_, names.second)));
         arg->children_.insert(make_pair(TYPE, Info::MakeLeaf(arg, arg->root_, type)));
         if (dim > 0)
-            arg->children_.insert(make_pair(DIMENSION, Info::MakeLeaf(arg, arg->root_, string(1, '0' + dim))));
+            arg->children_.insert(make_pair(DIMENSION, Info::MakeLeaf(arg, arg->root_, std::string(1, '0' + dim))));
         if (greedy)
             arg->children_.insert(make_pair(GREEDY, Info::MakeLeaf(arg, arg->root_, "1")));
         (void)AddNonempty(arg, SUBTYPE, subtype);
@@ -126,11 +126,11 @@ namespace {
         }
     }
 
-    pair<string, string> SubtypeAndDefault(const string& mash) {
+    pair<std::string, std::string> SubtypeAndDefault(const std::string& mash) {
         auto bra = mash.find('(');
-        if (bra == string::npos)
-            return make_pair(mash, string()); // no default
-        pair<string, string> retval(TrimWhitespace(mash.substr(0, bra)), TrimWhitespace(mash.substr(bra + 1)));
+        if (bra == std::string::npos)
+            return make_pair(mash, std::string()); // no default
+        pair<std::string, std::string> retval(TrimWhitespace(mash.substr(0, bra)), TrimWhitespace(mash.substr(bra + 1)));
         if (!retval.second.empty()) {
             REQUIRE(retval.second.back() == ')', "Found '(' for default input value without matching ')'");
             retval.second.pop_back();
@@ -140,36 +140,36 @@ namespace {
 
     void ExtractTranslators // peel translators (e.g. "or string->MyTypeFromString") off the right side of the markup
                             // line
-        (string* rest, map<string, string>* translators) {
+        (std::string* rest, map<std::string, std::string>* translators) {
         for (;;) {
-            // find last occurrence of separator string " or "
+            // find last occurrence of separator std::string " or "
             auto orLoc = rest->rfind(" or ");
-            if (orLoc == string::npos)
+            if (orLoc == std::string::npos)
                 return;
             auto tt = rest->substr(orLoc + 4);
             *rest = rest->substr(0, orLoc);
             // split the type and translator on "->"
             auto sepLoc = tt.find("->");
-            if (sepLoc == string::npos)
-                translators->insert(make_pair(tt, string())); // no translator supplied, we'll autogenerate something
+            if (sepLoc == std::string::npos)
+                translators->insert(make_pair(tt, std::string())); // no translator supplied, we'll autogenerate something
             else
                 translators->insert(make_pair(tt.substr(0, sepLoc), tt.substr(sepLoc + 2)));
         }
     }
 
-    vector<string>::const_iterator ReadArgument(const Info_* parent,
-                                                vector<string>::const_iterator line,
-                                                vector<string>::const_iterator end,
+    std::vector<std::string>::const_iterator ReadArgument(const Info_* parent,
+                                                std::vector<std::string>::const_iterator line,
+                                                std::vector<std::string>::const_iterator end,
                                                 bool optional,
                                                 Handle_<Info_>* dst) {
-        unique_ptr<Info_> arg(new Info_(parent, parent, string())); // populate content later
+        unique_ptr<Info_> arg(new Info_(parent, parent, std::string())); // populate content later
         REQUIRE(!line->empty() && !StartsWithWhitespace(*line), "Expected un-indented line to declare argument");
         auto is = line->find(IS);
         REQUIRE(is != line->npos, "Input needs type declaration using 'is' (" + *line + ")");
-        const string name = line->substr(0, is);
-        string rest = line->substr(is + IS.size());
+        const std::string name = line->substr(0, is);
+        std::string rest = line->substr(is + IS.size());
         auto endType = rest.find_first_of(" \t["); // anything that terminates the type
-        const string type = rest.substr(0, endType);
+        const std::string type = rest.substr(0, endType);
         rest = rest.substr(type.size());
         int dim = 0;
         while (rest.substr(0, 2) == "[]") {
@@ -180,13 +180,13 @@ namespace {
         if (greedy)
             rest = rest.substr(1);
         REQUIRE(StartsWithWhitespace(rest), "No space before subtype");
-        map<string, string> inTranslators;
+        map<std::string, std::string> inTranslators;
         ExtractTranslators(&rest, &inTranslators);
         auto sub_def = SubtypeAndDefault(AfterInitialWhitespace(rest));
-        const string subtype = rest.empty() ? string() : AfterInitialWhitespace(rest);
+        const std::string subtype = rest.empty() ? std::string() : AfterInitialWhitespace(rest);
         unique_ptr<Info_> help, insert;
         ++line;
-        vector<Handle_<Info_>> conditions;
+        std::vector<Handle_<Info_>> conditions;
         line = ReadHelp(arg.get(), parent->root_, line, end, &help, &conditions);
         line = ReadInsert(arg.get(), parent->root_, line, end, &insert);
         PopulateArgument(arg.get(), name, type, dim, greedy, sub_def.first, optional, sub_def.second, inTranslators,
@@ -195,8 +195,8 @@ namespace {
         return line;
     }
 
-    vector<string>::const_iterator
-    ReadCategory(Info_* parent, vector<string>::const_iterator line, vector<string>::const_iterator end) {
+    std::vector<std::string>::const_iterator
+    ReadCategory(Info_* parent, std::vector<std::string>::const_iterator line, std::vector<std::string>::const_iterator end) {
         if (line != end && !line->empty() && line->substr(0, CATEGORY.size()) == CATEGORY) {
             Handle_<Info_> category =
                 Info::MakeLeaf(parent, parent->root_, AfterInitialWhitespace(line->substr(CATEGORY.size())));
@@ -206,8 +206,8 @@ namespace {
         return line;
     }
 
-    vector<string>::const_iterator
-    ReadVolatile(Info_* parent, vector<string>::const_iterator line, vector<string>::const_iterator end) {
+    std::vector<std::string>::const_iterator
+    ReadVolatile(Info_* parent, std::vector<std::string>::const_iterator line, std::vector<std::string>::const_iterator end) {
         if (line != end && *line == VOLATILE) {
             Handle_<Info_> child = Info::MakeLeaf(parent, parent->root_, "1");
             parent->children_.insert(make_pair(VOLATILE, child));
@@ -216,14 +216,14 @@ namespace {
         return line;
     }
 
-    vector<string>::const_iterator ReadSuppress(const Info_* parent,
-                                                vector<string>::const_iterator line,
-                                                vector<string>::const_iterator end,
+    std::vector<std::string>::const_iterator ReadSuppress(const Info_* parent,
+                                                std::vector<std::string>::const_iterator line,
+                                                std::vector<std::string>::const_iterator end,
                                                 Handle_<Info_>* suppress) {
         unique_ptr<Info_> temp;
         while (line != end && !line->empty() && line->front() == '-') {
             if (!temp.get())
-                temp.reset(new Info_(parent, parent, string()));
+                temp.reset(new Info_(parent, parent, std::string()));
             temp->children_.insert(make_pair(line->substr(1), Info::MakeLeaf(temp.get(), parent->root_, "_")));
             ++line;
         }
@@ -235,7 +235,7 @@ namespace {
     struct ParsePublic_ : Info::Parser_ {
         ParsePublic_() { Info::RegisterParser(PUBLIC, *this); }
 
-        Info_* operator()(const string& info_name, const vector<string>& content) const {
+        Info_* operator()(const std::string& info_name, const std::vector<std::string>& content) const {
             unique_ptr<Info_> retval(new Info_(0, 0, info_name));
             auto line = content.begin();
             // read the help
@@ -325,8 +325,8 @@ namespace {
         NUM_TYPES
     };
 
-    int TypeToIndex(const string& type) {
-        static map<string, int> VALS;
+    int TypeToIndex(const std::string& type) {
+        static map<std::string, int> VALS;
         static bool first = true;
         if (first) {
             first = false;
@@ -348,7 +348,7 @@ namespace {
         return pt->second;
     }
 
-    string ScalarCType(const string& type, const string& subtype, bool suppress_subtype = false) {
+    std::string ScalarCType(const std::string& type, const std::string& subtype, bool suppress_subtype = false) {
         const char* RETVAL[NUM_TYPES] = {"double",      "int", "bool", "String_", "DateTime_", "Cell_",
                                          "Dictionary_", ":::", ":::",  ":::",     "Date_",     ":::"};
         const int which = TypeToIndex(type);
@@ -356,16 +356,16 @@ namespace {
         case ENUM:
             return suppress_subtype ? "String_" : subtype + "_";
         case HANDLE:
-            return "Handle_<" + (subtype.empty() || suppress_subtype ? string("Storable") : subtype) + "_>";
+            return "Handle_<" + (subtype.empty() || suppress_subtype ? std::string("Storable") : subtype) + "_>";
         case SETTINGS:
         case RECORD:
             return subtype + "_";
         default:
-            return string(RETVAL[which]);
+            return std::string(RETVAL[which]);
         }
     }
 
-    string XDNType(const string& type, int dimension, int is_top = true) {
+    std::string XDNType(const std::string& type, int dimension, int is_top = true) {
         const char* RETVAL[NUM_TYPES] = {"System::Double",
                                          "System::Int32",
                                          "System::Boolean",
@@ -382,7 +382,7 @@ namespace {
     }
 
     int Dimension(const Info_& arg) {
-        const string dim = GetOptional(arg, DIMENSION);
+        const std::string dim = GetOptional(arg, DIMENSION);
         if (dim == "0" || dim.empty())
             return 0;
         if (dim == "1")
@@ -391,7 +391,7 @@ namespace {
         return 2;
     }
 
-    bool HasCanonicalDefault(const string& scalar_type) {
+    bool HasCanonicalDefault(const std::string& scalar_type) {
         switch (TypeToIndex(scalar_type)) {
         case NUMBER:
         case INTEGER:
@@ -403,7 +403,7 @@ namespace {
         return true;
     }
 
-    string IsCookie(const Info_& src) {
+    std::string IsCookie(const Info_& src) {
         if (Dimension(src) == 0) {
             switch (TypeToIndex(GetMandatory(src, TYPE))) {
             case NUMBER:
@@ -412,15 +412,15 @@ namespace {
             case TIME:
             case DATE:
             case STRING:
-                return string(); // these are the types we can pass directly
+                return std::string(); // these are the types we can pass directly
             }
         }
         return "1";
     }
 
-    string XCType(const Info_& src, bool suppress_subtype) {
-        const string type = GetMandatory(src, TYPE);
-        const string scalar = ScalarCType(type, GetOptional(src, SUBTYPE), suppress_subtype);
+    std::string XCType(const Info_& src, bool suppress_subtype) {
+        const std::string type = GetMandatory(src, TYPE);
+        const std::string scalar = ScalarCType(type, GetOptional(src, SUBTYPE), suppress_subtype);
         switch (Dimension(src)) {
         default:
         case 0:
@@ -434,14 +434,14 @@ namespace {
             return "Matrix_<" + scalar + ">";
         }
     }
-    string CType(const Info_& src) { return XCType(src, false); }
-    string CBaseType(const Info_& src) { return XCType(src, true); }
+    std::string CType(const Info_& src) { return XCType(src, false); }
+    std::string CBaseType(const Info_& src) { return XCType(src, true); }
 
-    string XCppInType(const Info_& src, bool suppress_subtype) {
-        const string type = GetMandatory(src, TYPE);
-        string scalar = ScalarCType(type, GetOptional(src, SUBTYPE), suppress_subtype);
+    std::string XCppInType(const Info_& src, bool suppress_subtype) {
+        const std::string type = GetMandatory(src, TYPE);
+        std::string scalar = ScalarCType(type, GetOptional(src, SUBTYPE), suppress_subtype);
 
-        string retval;
+        std::string retval;
         switch (Dimension(src)) {
         default:
         case 0:
@@ -457,16 +457,16 @@ namespace {
         const bool ptrArg = !GetOptional(src, OPTIONAL).empty() && GetOptional(src, DEFAULT).empty();
         return "const " + retval + (ptrArg ? '*' : '&');
     }
-    string CppInType(const Info_& src) { return XCppInType(src, true); } // used at external interface level
-    string XCppOutType(const Info_& src, bool suppress_subtype) {
-        string temp = XCppInType(src, suppress_subtype);
+    std::string CppInType(const Info_& src) { return XCppInType(src, true); } // used at external interface level
+    std::string XCppOutType(const Info_& src, bool suppress_subtype) {
+        std::string temp = XCppInType(src, suppress_subtype);
         temp.back() = '*'; // never a reference
         // assert(temp.substr(0, 6) == "const ");
         return temp.substr(6); // never const
     }
-    string CppOutType(const Info_& src) { return XCppOutType(src, false); }
+    std::string CppOutType(const Info_& src) { return XCppOutType(src, false); }
 
-    string CppPassArg_ConvertPointers(const Info_& src) {
+    std::string CppPassArg_ConvertPointers(const Info_& src) {
         if (GetOptional(src, OPTIONAL).empty())
             return src.content_; // pass as-is
         if (Dimension(src) == 0) {
@@ -479,16 +479,16 @@ namespace {
             if (TypeToIndex(type) == STRING && !defval.empty())
                 return src.content_; // default already supplied
         }
-        string ctype = XCppOutType(src, true);
+        std::string ctype = XCppOutType(src, true);
         ctype.pop_back(); // the '*'
         return '(' + src.content_ + " ? *" + src.content_ + " : " + ctype + "())";
     }
-    string CppPassArg(const Info_& src) {
-        const string retval = CppPassArg_ConvertPointers(src); // might be all we need
+    std::string CppPassArg(const Info_& src) {
+        const std::string retval = CppPassArg_ConvertPointers(src); // might be all we need
 
-        const string subtype = GetOptional(src, SUBTYPE);
-        const string outtype = CppOutType(src);
-        const string enumsubtype = outtype.substr(0, outtype.size() - 1);
+        const std::string subtype = GetOptional(src, SUBTYPE);
+        const std::string outtype = CppOutType(src);
+        const std::string enumsubtype = outtype.substr(0, outtype.size() - 1);
 
         switch (TypeToIndex(GetMandatory(src, TYPE))) {
         case HANDLE:
@@ -506,29 +506,29 @@ namespace {
         return retval;
     }
 
-    string TypeForCat(const string& type, const string& subtype) {
-        string retval = subtype.empty() ? type : subtype;
+    std::string TypeForCat(const std::string& type, const std::string& subtype) {
+        std::string retval = subtype.empty() ? type : subtype;
         retval[0] = toupper(retval[0]);
         return retval;
     }
 
-    string InTypeTranslator(const Info_& src) {
+    std::string InTypeTranslator(const Info_& src) {
         auto user = GetOptional(src, TRANSLATOR);
         if (!user.empty()) // user has supplied a translator
             return user;
         return TypeForCat(GetMandatory(*src.parent_, TYPE), GetOptional(*src.parent_, SUBTYPE)) + "::From" +
-               TypeForCat(src.content_, string());
+               TypeForCat(src.content_, std::string());
     }
 
-    string DotNetType(const Info_& src) {
-        const string type = GetMandatory(src, TYPE);
-        string retval = XDNType(type, Dimension(src));
+    std::string DotNetType(const Info_& src) {
+        const std::string type = GetMandatory(src, TYPE);
+        std::string retval = XDNType(type, Dimension(src));
         return (!GetOptional(src, OPTIONAL).empty() && !HasCanonicalDefault(type) && Dimension(src) == 0)
                    ? "TALibNet::Optional_<" + retval + ">^"
                    : retval;
     }
 
-    string MMPassAsString(const Info_& src) {
+    std::string MMPassAsString(const Info_& src) {
         const int dim = Dimension(src);
         switch (TypeToIndex(GetMandatory(src, TYPE))) {
         case STRING:
@@ -538,42 +538,42 @@ namespace {
         case DICTIONARY:
         case SETTINGS:
         case RECORD:
-            return string("1");
+            return std::string("1");
 
         default:
             break;
         }
-        return string();
+        return std::string();
     }
 
-    string DimensionString(int dim) {
-        string retval("0");
+    std::string DimensionString(int dim) {
+        std::string retval("0");
         retval[0] += dim;
         return retval;
     }
-    string XMMType(const string& type, int dimension, int is_top = true) {
+    std::string XMMType(const std::string& type, int dimension, int is_top = true) {
         const char* RETVAL[NUM_TYPES] = {"Real",           "Integer",      "\"Boolean\"",    "\"UTF8String\"",
                                          "\"TIME\"",       "\"CELL\"",     "\"DICTIONARY\"", "\"UTF8String\"",
                                          "\"UTF8String\"", "\"SETTINGS\"", "\"UTF8String\"", "\"SETTINGS\""};
         return dimension == 0 ? RETVAL[TypeToIndex(type)]
                               : "{" + XMMType(type, 0, false) + "," + DimensionString(dimension) + ",Constant}";
     }
-    string XMMTypeShort(const string& type, int dimension, int is_top = true) {
+    std::string XMMTypeShort(const std::string& type, int dimension, int is_top = true) {
         const char* RETVAL[NUM_TYPES] = {"Num",  "Int", "Bool", "Str",  "Time", "Cell",
                                          "Dict", "Str", "Str",  "Dict", "Date", "Dict"};
-        return RETVAL[TypeToIndex(type)] + (dimension == 0 ? string() : DimensionString(dimension));
+        return RETVAL[TypeToIndex(type)] + (dimension == 0 ? std::string() : DimensionString(dimension));
     }
 
-    string MathematicaArgType(const Info_& src) {
+    std::string MathematicaArgType(const Info_& src) {
         if (!MMPassAsString(src).empty())
-            return string("\"UTF8String\"");
+            return std::string("\"UTF8String\"");
 
-        const string type = GetMandatory(src, TYPE);
-        string retval = XMMType(type, Dimension(src));
+        const std::string type = GetMandatory(src, TYPE);
+        std::string retval = XMMType(type, Dimension(src));
         return retval; // postponed -- handle optional args?  maybe with overloading?
     }
-    string MathematicaArgTypeQ(const Info_& src) {
-        string retval = MathematicaArgType(src);
+    std::string MathematicaArgTypeQ(const Info_& src) {
+        std::string retval = MathematicaArgType(src);
         if (!retval.empty() && retval[0] == '"') // retval is quoted, need to escape the quotes
         {
             retval.back() = '\\';
@@ -581,14 +581,14 @@ namespace {
         }
         return retval; // postponed -- handle optional args?  maybe with overloading?
     }
-    string MathematicaShortType(const Info_& src) {
-        const string type = GetMandatory(src, TYPE);
-        string retval = XMMTypeShort(type, Dimension(src));
+    std::string MathematicaShortType(const Info_& src) {
+        const std::string type = GetMandatory(src, TYPE);
+        std::string retval = XMMTypeShort(type, Dimension(src));
         return retval; // postponed -- handle optional args?  maybe with overloading?
     }
-    string HashedArgNumbers(const Info_& src) {
+    std::string HashedArgNumbers(const Info_& src) {
         const int nInputs = src.children_.count("input");
-        string retval;
+        std::string retval;
         for (int ii = 0; ii < nInputs; ++ii)
             retval += '#' + DimensionString(ii + 1) + ", ";
         while (!retval.empty() && (retval.back() == ' ' || retval.back() == ','))
@@ -596,7 +596,7 @@ namespace {
         return retval;
     }
 
-    string XJNISignatureType(const string& type, int dimension) {
+    std::string XJNISignatureType(const std::string& type, int dimension) {
         const char* RETVAL[NUM_TYPES] = {"D",
                                          "I",
                                          "B",
@@ -609,42 +609,42 @@ namespace {
                                          "LDA/Dictionary;",
                                          "Ljava/util/Date;",
                                          "LDA/Dictionary;"};
-        string retval(RETVAL[TypeToIndex(type)]);
+        std::string retval(RETVAL[TypeToIndex(type)]);
         for (int id = 0; id < dimension; ++id)
             retval = '[' + retval + ')';
         return retval;
     }
-    string JNI_SignatureType(const Info_& src) { return XJNISignatureType(GetMandatory(src, TYPE), Dimension(src)); }
+    std::string JNI_SignatureType(const Info_& src) { return XJNISignatureType(GetMandatory(src, TYPE), Dimension(src)); }
 
-    string XJNINativeType(const string& type, int dimension) {
+    std::string XJNINativeType(const std::string& type, int dimension) {
         const char* SCALAR_TYPE[NUM_TYPES] = {"jdouble", "jint",    "jboolean", "jstring", "jobject", "jobject",
                                               "jobject", "jstring", "jobject",  "jobject", "jobject", "jobject"};
         const char* ELEMENT_TYPE[NUM_TYPES] = {"double", "int", "boolean", "", "", "", "", "", "", "", "", ""};
         if (dimension > 0) {
-            string e(ELEMENT_TYPE[TypeToIndex(type)]);
+            std::string e(ELEMENT_TYPE[TypeToIndex(type)]);
             if (dimension > 1 || e.empty())
                 return "jobjectArray";
             return "j" + e + "Array";
         }
         return SCALAR_TYPE[TypeToIndex(type)];
     }
-    string JNI_NativeType(const Info_& src) { return XJNINativeType(GetMandatory(src, TYPE), Dimension(src)); }
+    std::string JNI_NativeType(const Info_& src) { return XJNINativeType(GetMandatory(src, TYPE), Dimension(src)); }
 
-    string XJuliaType(const string& type, int dimension) {
+    std::string XJuliaType(const std::string& type, int dimension) {
         const char* SCALAR[NUM_TYPES] = {"Float64",    "Int32", "Bool",   "Ptr{Uint8}", "TIME", "CELL",
                                          "DICTIONARY", "ENUM",  "Handle", "SETTINGS",   "DATE", "RECORD"};
-        const string retval = SCALAR[TypeToIndex(type)];
+        const std::string retval = SCALAR[TypeToIndex(type)];
         return dimension == 0 ? retval : "Array{" + retval + ", " + DimensionString(dimension) + "}";
     }
-    string JuliaType(const Info_& src) { return XJuliaType(GetMandatory(src, TYPE), Dimension(src)); }
+    std::string JuliaType(const Info_& src) { return XJuliaType(GetMandatory(src, TYPE), Dimension(src)); }
 
-    string CookiePostfix(const Info_& src) {
+    std::string CookiePostfix(const Info_& src) {
         const char* SCALAR[NUM_TYPES] = {"Double", "Int",  "Bool",   "String",   "DateTime", "Cell",
                                          "Dict",   "Enum", "Handle", "Settings", "Date",     "Record"};
-        string retval;
+        std::string retval;
         switch (Dimension(src)) {
         case 1:
-            retval += "Vector";
+            retval += "std::vector";
             break;
         case 2:
             retval += "Matrix";
@@ -654,23 +654,23 @@ namespace {
         return retval;
     }
 
-    string CSubTypeAngleBracket(const Info_& src) {
-        string scalar, postfix;
-        const string type = GetMandatory(src, TYPE);
+    std::string CSubTypeAngleBracket(const Info_& src) {
+        std::string scalar, postfix;
+        const std::string type = GetMandatory(src, TYPE);
         if (TypeToIndex(type) == HANDLE) {
-            const string subtype = GetOptional(src, SUBTYPE);
+            const std::string subtype = GetOptional(src, SUBTYPE);
             if (subtype.empty())
-                return string("");
+                return std::string("");
             else
-                return string("<") + subtype + "_>";
+                return std::string("<") + subtype + "_>";
         }
 
-        return string("");
+        return std::string("");
     }
 
-    string CTypeTranslator(const Info_& src) {
-        string scalar, postfix;
-        const string type = GetMandatory(src, TYPE);
+    std::string CTypeTranslator(const Info_& src) {
+        std::string scalar, postfix;
+        const std::string type = GetMandatory(src, TYPE);
         switch (TypeToIndex(type)) {
         case ENUM:
             scalar = "Enum";
@@ -678,7 +678,7 @@ namespace {
             break;
 
         case HANDLE: {
-            const string subtype = GetOptional(src, SUBTYPE);
+            const std::string subtype = GetOptional(src, SUBTYPE);
             if (subtype.empty())
                 scalar = "HandleBase";
             else
@@ -708,25 +708,25 @@ namespace {
         }
     }
 
-    string ExcelName(const Info_& src) {
+    std::string ExcelName(const Info_& src) {
         if (src.children_.count(CATEGORY)) // rule is that functions with a category have verbatim names
             return src.content_;
-        string retval;
+        std::string retval;
         for (auto pc = src.content_.begin(); pc != src.content_.end(); ++pc) {
             const char C = toupper(*pc);
             retval.push_back(C == '_' ? '.' : C);
         }
         return (retval.find('.') == retval.npos) ? "DA." + retval : retval;
     }
-    string PythonName(const Info_& src) {
-        string retval = src.content_;
+    std::string PythonName(const Info_& src) {
+        std::string retval = src.content_;
         std::transform(retval.begin(), retval.end(), retval.begin(), tolower);
         if (retval.substr(0, 3) == "axl")
             retval = retval.substr(3);
         return retval;
     }
-    string CppName(const Info_& src) {
-        string retval;
+    std::string CppName(const Info_& src) {
+        std::string retval;
         bool upper = true;
         // coerce to CamelCase
         for (auto pc = src.content_.begin(); pc != src.content_.end(); ++pc) {
@@ -743,8 +743,8 @@ namespace {
         return retval;
     }
 
-    string MMName(const Info_& src) {
-        string retval;
+    std::string MMName(const Info_& src) {
+        std::string retval;
         for (auto pc = src.content_.begin(); pc != src.content_.end(); ++pc) {
             if (toupper(*pc) != tolower(*pc))
                 retval.push_back(*pc);
@@ -752,22 +752,22 @@ namespace {
         return retval;
     }
 
-    string MultipleOutputs(const Info_& src) { return src.children_.count("output") > 1 ? string("1") : string(); }
+    std::string MultipleOutputs(const Info_& src) { return src.children_.count("output") > 1 ? std::string("1") : std::string(); }
 
     //--------------------------------------------------------------------------
 
-    string TypeForHelp(const Info_& src) {
-        const string& t = GetMandatory(src, TYPE);
-        string s = t;
+    std::string TypeForHelp(const Info_& src) {
+        const std::string& t = GetMandatory(src, TYPE);
+        std::string s = t;
         switch (Dimension(src)) {
         case 1:
-            s = "vector of " + s + "s";
+            s = "std::vector of " + s + "s";
             break;
         case 2:
             s = "matrix of " + s + "s";
             break;
         }
-        string sub = GetOptional(src, SUBTYPE);
+        std::string sub = GetOptional(src, SUBTYPE);
         if (!sub.empty()) {
             switch (TypeToIndex(t)) {
             case ENUM:
@@ -786,9 +786,9 @@ namespace {
 
     struct MakePublicEmitter_ : Emitter::Source_ {
         MakePublicEmitter_() { Emitter::RegisterSource(PUBLIC, *this); }
-        Emitter::Funcs_ Parse(const vector<string>& lib, const string& path) const {
+        Emitter::Funcs_ Parse(const std::vector<std::string>& lib, const std::string& path) const {
             // start with the library
-            vector<string> tLines(lib);
+            std::vector<std::string> tLines(lib);
             // add the template
             std::filesystem::path pl(path);
             File::Read((pl / "Public.mgt").string(), &tLines);

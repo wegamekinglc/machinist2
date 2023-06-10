@@ -18,7 +18,7 @@ namespace {
     static const char PCT('%');
     static const char COLON(':');
 
-    bool IsComment(string::const_iterator letter, string::const_iterator line) {
+    bool IsComment(std::string::const_iterator letter, std::string::const_iterator line) {
         if (*letter == BACKQ) {
             // it's a literal BACKQ iff there's an odd number of PCT before it
             int np = 0;
@@ -31,10 +31,10 @@ namespace {
 
     struct XInput_ // very primitive lexer, handles comments
     {
-        const vector<string>& vals_;
-        vector<string>::const_iterator outer_;
-        string::const_iterator inner_;
-        XInput_(const vector<string>& src) : vals_(src), outer_(src.begin()), inner_(src.begin()->begin()) {}
+        const std::vector<std::string>& vals_;
+        std::vector<std::string>::const_iterator outer_;
+        std::string::const_iterator inner_;
+        XInput_(const std::vector<std::string>& src) : vals_(src), outer_(src.begin()), inner_(src.begin()->begin()) {}
 
         void PutBack(int how_many) // we read too many; back up
         {
@@ -66,7 +66,7 @@ namespace {
     {
         char bra_, ket_;
         int depth_; // number of unmatched bras
-        string seen_;
+        std::string seen_;
         MatchKet_(char bra, char ket) : bra_(bra), ket_(ket), depth_(1) {}
 
         void operator()(char c) {
@@ -80,28 +80,28 @@ namespace {
         }
         bool Done() const { return depth_ == 0; }
     };
-    string::const_iterator MatchKet(string::const_iterator bra, char ket, string::const_iterator end) {
+    std::string::const_iterator MatchKet(std::string::const_iterator bra, char ket, std::string::const_iterator end) {
         MatchKet_ count(*bra, ket);
         for (auto pc = Next(bra);; ++pc) {
-            REQUIRE(pc != end, "Reached end before finding closing '" + string(1, ket) + "'");
+            REQUIRE(pc != end, "Reached end before finding closing '" + std::string(1, ket) + "'");
             count(*pc);
             if (count.Done())
                 return pc;
         }
     }
 
-    struct MatchUntil_ // gets from ShowUntil up to a specific character string -- discards the string
+    struct MatchUntil_ // gets from ShowUntil up to a specific character std::string -- discards the string
     {
-        string match_;
+        std::string match_;
         bool eofOK_;
         int sofar_;
-        string seen_;
-        MatchUntil_(const string& match, bool eof_ok = true) : match_(match), eofOK_(eof_ok), sofar_(0) {
+        std::string seen_;
+        MatchUntil_(const std::string& match, bool eof_ok = true) : match_(match), eofOK_(eof_ok), sofar_(0) {
             // we don't do the full O(N) test for semi-overlapping matches
             // so we won't find, e.g., "opinion" in "opiniopinion" because the second 'o' will back up to zero
             assert(!match.empty());
             assert(match.substr(1).find(match[0]) ==
-                   string::npos); // Match algorithm not reliable when first character is repeated
+                   std::string::npos); // Match algorithm not reliable when first character is repeated
         }
 
         void operator()(char c) {
@@ -125,7 +125,7 @@ namespace {
 
     struct FuncName_ // demands that ShowUntil contain a function name, or all whitespace to EOF
     {
-        string name_;
+        std::string name_;
         enum { WHITE, PERCENT, NAME, DONE } state_;
         FuncName_() : state_(WHITE) {}
         void operator()(char c) {
@@ -169,8 +169,8 @@ namespace {
         bool Done() const { return found_ || eof_; }
     };
 
-    string UnEscape(string::const_iterator start, string::const_iterator stop) {
-        string retval;
+    std::string UnEscape(std::string::const_iterator start, std::string::const_iterator stop) {
+        std::string retval;
         while (start < stop) {
             if (*start == '%')
                 ++start;
@@ -184,15 +184,15 @@ namespace {
 
     struct Composite_ : Emitter_ // emit several things in series
     {
-        vector<Handle_<Emitter_>> vals_;
+        std::vector<Handle_<Emitter_>> vals_;
         void Append(Emitter_* e) // captures the input pointer
         {
             vals_.push_back(Handle_<Emitter_>(e));
         }
-        vector<string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const override {
-            vector<string> retval;
+        std::vector<std::string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const override {
+            std::vector<std::string> retval;
             for (auto pv = vals_.begin(); pv != vals_.end(); ++pv) {
-                vector<string> more = (**pv)(arg, lib);
+                std::vector<std::string> more = (**pv)(arg, lib);
                 retval.insert(retval.end(), more.begin(), more.end());
             }
             return retval;
@@ -201,10 +201,10 @@ namespace {
 
     struct Literal_ : Emitter_ // emit literal text
     {
-        string literal_;
-        Literal_(string l) : literal_(l) {}
-        vector<string> operator()(const Info_&, const Emitter::Funcs_&) const override {
-            return vector<string>(1, literal_);
+        std::string literal_;
+        Literal_(std::string l) : literal_(l) {}
+        std::vector<std::string> operator()(const Info_&, const Emitter::Funcs_&) const override {
+            return std::vector<std::string>(1, literal_);
         }
     };
 
@@ -219,32 +219,32 @@ namespace {
         bool isNot_;
         bool isOr_;
 
-        Conditional_(Emitter_* c, Emitter_* v, bool p, bool io, const string& m)
+        Conditional_(Emitter_* c, Emitter_* v, bool p, bool io, const std::string& m)
             : cond_(c), val_(v), isNot_(p && m.empty()), isOr_(io),
               match_(p ? (m.empty() ? IS_BLANK : std::regex(m)) : HAS_NONWHITE) {}
 
-        vector<string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const {
-            vector<string> save = (*cond_)(arg, lib);                     // need to put this in an lvalue
-            string test = accumulate(save.begin(), save.end(), string()); // search in a raw join, no whitespace
+        std::vector<std::string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const {
+            std::vector<std::string> save = (*cond_)(arg, lib);                     // need to put this in an lvalue
+            std::string test = accumulate(save.begin(), save.end(), std::string()); // search in a raw join, no whitespace
             bool matched = isNot_ ? IsAllWhite(test) : std::regex_search(test, match_);
             if (isOr_)
                 return matched ? save : (*val_)(arg, lib);
             // conditional
-            return matched ? (*val_)(arg, lib) : vector<string>();
+            return matched ? (*val_)(arg, lib) : std::vector<std::string>();
         }
     };
 
     struct Iterate_ : Emitter_ // emit something for all children
     {
-        string childName_;
-        string separator_;
+        std::string childName_;
+        std::string separator_;
         Handle_<Emitter_> val_;
         bool sort_;
-        Iterate_(const string& child, const string& separator, bool sort, Emitter_* val)
+        Iterate_(const std::string& child, const std::string& separator, bool sort, Emitter_* val)
             : childName_(child), separator_(separator), sort_(sort), val_(val) {}
 
         template <class I_>
-        void EmitRaw(const I_& start, const I_& stop, const Emitter::Funcs_& lib, vector<string>* dst) const {
+        void EmitRaw(const I_& start, const I_& stop, const Emitter::Funcs_& lib, std::vector<std::string>* dst) const {
             for (auto pc = start; pc != stop; ++pc) {
                 if (pc != start && !separator_.empty())
                     dst->push_back(separator_);
@@ -252,16 +252,16 @@ namespace {
                 dst->insert(dst->end(), contrib.begin(), contrib.end());
             }
         }
-        template <class R_> void EmitSorted(const R_& range, const Emitter::Funcs_& lib, vector<string>* dst) const {
+        template <class R_> void EmitSorted(const R_& range, const Emitter::Funcs_& lib, std::vector<std::string>* dst) const {
             // copy the children into a map keyed on own content
-            multimap<string, Handle_<Info_>> ordered;
+            multimap<std::string, Handle_<Info_>> ordered;
             for (auto pc = range.first; pc != range.second; ++pc)
                 ordered.insert(make_pair(pc->second->content_, pc->second));
             EmitRaw(ordered.begin(), ordered.end(), lib, dst);
         }
 
-        vector<string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const override {
-            vector<string> retval;
+        std::vector<std::string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const override {
+            std::vector<std::string> retval;
             // wow, this actually requires looking at the info
             auto children = arg.children_.equal_range(childName_);
             if (sort_)
@@ -274,11 +274,11 @@ namespace {
 
     struct Funcall_ : Emitter_ // call another emitter
     {
-        string funcName_;
+        std::string funcName_;
         Info::Path_ arg_;
         bool quiet_;
-        Funcall_(const string& name, const string& path, bool quiet) : funcName_(name), arg_(path), quiet_(quiet) {}
-        vector<string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const override {
+        Funcall_(const std::string& name, const std::string& path, bool quiet) : funcName_(name), arg_(path), quiet_(quiet) {}
+        std::vector<std::string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const override {
             // have to navigate the info to the path
             return Emitter::Call(arg_(arg, quiet_), lib, funcName_);
         }
@@ -286,24 +286,24 @@ namespace {
 
     struct Transform_ : Emitter_ // call a string->string transformation
     {
-        string funcName_;       // name of the transformation to do
+        std::string funcName_;       // name of the transformation to do
         Handle_<Emitter_> arg_; // to evaluate and pass
-        Transform_(const string& name, Emitter_* arg) : funcName_(name), arg_(arg) {}
+        Transform_(const std::string& name, Emitter_* arg) : funcName_(name), arg_(arg) {}
 
-        vector<string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const override {
-            vector<string> temp = (*arg_)(arg, lib); // need to put this in an lvalue
-            string src = accumulate(temp.begin(), temp.end(),
-                                    string()); // function operates on combined string, doesn't see how it was accreted
+        std::vector<std::string> operator()(const Info_& arg, const Emitter::Funcs_& lib) const override {
+            std::vector<std::string> temp = (*arg_)(arg, lib); // need to put this in an lvalue
+            std::string src = accumulate(temp.begin(), temp.end(),
+                                    std::string()); // function operates on combined string, doesn't see how it was accreted
             return Emitter::CallTransform(src, lib, funcName_);
         }
     };
 
     bool IsOpener(char c) { return c == '(' || c == '<'; }
 
-    Emitter_* ParseFunc(const string& src, bool quiet = false) {
+    Emitter_* ParseFunc(const std::string& src, bool quiet = false) {
         assert(src.find(EOF) == src.npos); // not prepared for EOF inside body
         unique_ptr<Composite_> retval(new Composite_);
-        for (string::const_iterator here = src.begin(); here != src.end();) {
+        for (std::string::const_iterator here = src.begin(); here != src.end();) {
             if (*here == PCT) {
                 REQUIRE(src.end() - here > 1, "Template can't end with %");
                 switch (*Next(here)) {
@@ -320,9 +320,9 @@ namespace {
                     REQUIRE(src.end() - here > 6, "'%?' too close to end of function");
                     auto bra = here + 2;
                     REQUIRE(*bra == '{',
-                            "'%" + string(1, *Next(here)) + "' must be followed by condition test enclosed in {}");
+                            "'%" + std::string(1, *Next(here)) + "' must be followed by condition test enclosed in {}");
                     auto ket = MatchKet(bra, '}', src.end());
-                    string cond(Next(bra), ket); // text of condition function
+                    std::string cond(Next(bra), ket); // text of condition function
                     REQUIRE(src.end() - ket > 3, "End of condition too close to end of function");
                     auto sep = bra = Next(ket);
                     for (;;) {
@@ -334,9 +334,9 @@ namespace {
                     }
                     REQUIRE(patterned || bra == sep,
                             "Can't supply a pattern to a simple %? query or %| emitter (pattern = " +
-                                string(here, bra) + ")");
+                                std::string(here, bra) + ")");
                     ket = MatchKet(bra, '}', src.end());
-                    string result(Next(bra), ket); // text of emitted function
+                    std::string result(Next(bra), ket); // text of emitted function
                     retval->Append(new Conditional_(ParseFunc(cond, true), ParseFunc(result), patterned, emitOne,
                                                     UnEscape(sep, bra)));
                     here = Next(ket);
@@ -348,14 +348,14 @@ namespace {
                     auto bra = here + 2;
                     REQUIRE(*bra == '[', "'%*' must be followed by child name enclosed in []");
                     auto ket = MatchKet(bra, ']', src.end());
-                    string child(Next(bra), ket); // child name
+                    std::string child(Next(bra), ket); // child name
                     REQUIRE(src.end() - ket > 3, "End of child name too close to end of function");
                     auto sep = Next(ket);
                     bra = find(sep, src.end(), '{');
                     REQUIRE(bra != src.end(), "Couldn't find body to emit for each child");
                     ket = MatchKet(bra, '}', src.end());
-                    string task(Next(bra), ket); // text of emitted function
-                    retval->Append(new Iterate_(child, string(sep, bra), *Next(here) == '^', ParseFunc(task)));
+                    std::string task(Next(bra), ket); // text of emitted function
+                    retval->Append(new Iterate_(child, std::string(sep, bra), *Next(here) == '^', ParseFunc(task)));
                     here = Next(ket);
                 } break;
                 case ':':
@@ -364,13 +364,13 @@ namespace {
                 {
                     REQUIRE(src.end() - here > 2, "Function call too close to end of function");
                     auto bra = find_if(Next(here), src.end(), IsOpener);
-                    string func(Next(here), bra);
-                    REQUIRE(src.end() - bra > 1, "End of function name ('" + string(here, Min(here + 30, bra)) +
+                    std::string func(Next(here), bra);
+                    REQUIRE(src.end() - bra > 1, "End of function name ('" + std::string(here, Min(here + 30, bra)) +
                                                      "') too close to end of function");
                     if (*bra == '(') // function call
                     {
                         auto ket = MatchKet(bra, ')', src.end());
-                        string arg(Next(bra), ket);
+                        std::string arg(Next(bra), ket);
                         if (func == "ENV") // not a true function call -- resolve it now
                             retval->Append(new Literal_(EnvironmentValue(arg)));
                         else
@@ -379,7 +379,7 @@ namespace {
                         here = Next(ket);
                     } else {
                         auto ket = MatchKet(bra, '>', src.end());
-                        string arg(Next(bra), ket);
+                        std::string arg(Next(bra), ket);
                         retval->Append(new Transform_(func, ParseFunc(arg)));
                         here = Next(ket);
                     }
@@ -388,7 +388,7 @@ namespace {
             } else // no '%' so it's just text up to the next '%'
             {
                 auto pct = find(here, src.end(), PCT);
-                retval->Append(new Literal_(string(here, pct)));
+                retval->Append(new Literal_(std::string(here, pct)));
                 here = pct;
             }
         }
@@ -397,13 +397,13 @@ namespace {
     }
 
     struct EmitContent_ : Emitter_ {
-        vector<string> operator()(const Info_& arg, const Emitter::Funcs_&) const override {
-            return vector<string>(1, arg.content_);
+        std::vector<std::string> operator()(const Info_& arg, const Emitter::Funcs_&) const override {
+            return std::vector<std::string>(1, arg.content_);
         }
     };
 
-    string Stringify(const string& src) {
-        string retval("\"");
+    std::string Stringify(const std::string& src) {
+        std::string retval("\"");
         bool bs = false;
         for (auto ps = src.begin(); ps != src.end(); ++ps) {
             if (bs) // just saw a backslash
@@ -435,20 +435,20 @@ namespace {
     // global counter shared all emitters
     static int THE_COUNT = 0;
     struct EmitCounter_ : Emitter_ {
-        vector<string> operator()(const Info_&, const Emitter::Funcs_&) const override {
-            return vector<string>(1, std::to_string(THE_COUNT++));
+        std::vector<std::string> operator()(const Info_&, const Emitter::Funcs_&) const override {
+            return std::vector<std::string>(1, std::to_string(THE_COUNT++));
         }
     };
     struct ResetCounter_ : Emitter_ {
-        vector<string> operator()(const Info_&, const Emitter::Funcs_&) const override {
+        std::vector<std::string> operator()(const Info_&, const Emitter::Funcs_&) const override {
             THE_COUNT = 0;
-            return vector<string>();
+            return std::vector<std::string>();
         }
     };
 
     // show a whole info (for debugging)
-    string EmitRecursive(const Info_& src, const string& tabs) {
-        string retval;
+    std::string EmitRecursive(const Info_& src, const std::string& tabs) {
+        std::string retval;
         // content
         retval += tabs + src.content_ + "\n";
         // children
@@ -458,14 +458,14 @@ namespace {
         }
         return retval;
     }
-    string EmitRecursive0(const Info_& src) { return EmitRecursive(src, string()); }
+    std::string EmitRecursive0(const Info_& src) { return EmitRecursive(src, std::string()); }
 
     static char** THE_ENV = 0;
 } // namespace
 
 void Template::SetGlobalCount(int c) { THE_COUNT = c; }
 
-Emitter::Funcs_ Template::Parse(const vector<string>& input_src) {
+Emitter::Funcs_ Template::Parse(const std::vector<std::string>& input_src) {
     REQUIRE(!input_src.empty(), "Template is empty");
     Emitter::Funcs_ retval;
     XInput_ src(input_src);
@@ -473,7 +473,7 @@ Emitter::Funcs_ Template::Parse(const vector<string>& input_src) {
         // first extract the function name
         FuncName_ getName;
         src.ShowUntil(getName);
-        const string funcName = getName.name_;
+        const std::string funcName = getName.name_;
         if (funcName.empty())
             break;                 // reached EOF
         MatchUntil_ getBody("%:"); // tag for the next function

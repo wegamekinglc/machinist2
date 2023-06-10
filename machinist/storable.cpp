@@ -14,28 +14,28 @@ using namespace ParseUtils;
  */
 
 namespace {
-    static const string HELP("help");
-    static const string CONDITION("condition");
-    static const string MEMBER("member");
-    static const string START_MEMBERS("&members");
-    static const string START_CONDITIONS("&conditions");
-    static const string IS(" is "); // includes space separators, meaning tabs won't be recognizes
-    static const string TYPE("type");
-    static const string SUBTYPE("subtype");
-    static const string DIMENSION("dimension");
-    static const string REPEAT("repeat");
-    static const string FROM("from");
-    static const string MULTIPLE("multiple");
-    static const string OPTIONAL("optional");
-    static const string DEFAULT("default");
-    static const string SETTINGS("settings"); // because we re-use the settings parser
-    static const string STORABLE("storable");
-    static const string RECORD("record");
+    static const std::string HELP("help");
+    static const std::string CONDITION("condition");
+    static const std::string MEMBER("member");
+    static const std::string START_MEMBERS("&members");
+    static const std::string START_CONDITIONS("&conditions");
+    static const std::string IS(" is "); // includes space separators, meaning tabs won't be recognizes
+    static const std::string TYPE("type");
+    static const std::string SUBTYPE("subtype");
+    static const std::string DIMENSION("dimension");
+    static const std::string REPEAT("repeat");
+    static const std::string FROM("from");
+    static const std::string MULTIPLE("multiple");
+    static const std::string OPTIONAL("optional");
+    static const std::string DEFAULT("default");
+    static const std::string SETTINGS("settings"); // because we re-use the settings parser
+    static const std::string STORABLE("storable");
+    static const std::string RECORD("record");
 
     struct ParseStorable_ : Info::Parser_ {
         ParseStorable_() { Info::RegisterParser(STORABLE, *this); }
 
-        Info_* operator()(const string& info_name, const vector<string>& content) const {
+        Info_* operator()(const std::string& info_name, const std::vector<std::string>& content) const {
             // settings parser should now be registered
             return Info::Parse(SETTINGS, info_name, content);
         }
@@ -46,9 +46,9 @@ namespace {
 
     struct MakeStorableEmitter_ : Emitter::Source_ {
         MakeStorableEmitter_() { Emitter::RegisterSource(STORABLE, *this); }
-        Emitter::Funcs_ Parse(const vector<string>& lib, const string& path) const {
+        Emitter::Funcs_ Parse(const std::vector<std::string>& lib, const std::string& path) const {
             // start with the library
-            vector<string> tLines(lib);
+            std::vector<std::string> tLines(lib);
             // add the template
             File::Read(path + "Storable.mgt", &tLines);
             auto retval = Template::Parse(tLines);

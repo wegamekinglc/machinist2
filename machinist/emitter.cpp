@@ -10,7 +10,7 @@ Emitter_::~Emitter_() {}
 
 StringTransform_::~StringTransform_() {}
 
-vector<string> Emitter::Call(const Info_& arg, const Funcs_& lib, const string& which) {
+std::vector<std::string> Emitter::Call(const Info_& arg, const Funcs_& lib, const std::string& which) {
     auto pf = lib.ofInfo_.find(which);
     if (pf == lib.ofInfo_.end()) {
         // can't find the function -- is there a transform-of-contents?
@@ -21,17 +21,17 @@ vector<string> Emitter::Call(const Info_& arg, const Funcs_& lib, const string& 
     return (*pf->second)(arg, lib);
 }
 
-vector<string> Emitter::CallTransform(const string& src, const Funcs_& lib, const string& which) {
+std::vector<std::string> Emitter::CallTransform(const std::string& src, const Funcs_& lib, const std::string& which) {
     auto pt = lib.ofString_.find(which);
     if (pt == lib.ofString_.end()) {
         // has to be a Perl-style /before/after/ substitution
         REQUIRE(count(which.begin(), which.end(), '/') == 3 && which.front() == '/' && which.back() == '/',
                 "Can't find emitter transformation '" + which + "'");
         auto mid = find(which.begin() + 1, which.end(), '/');
-        std::regex before(string(which.begin() + 1, mid));
-        string after(mid + 1, which.end() - 1);
-        string retval = regex_replace(src, before, after);
-        return vector<string>(1, retval);
+        std::regex before(std::string(which.begin() + 1, mid));
+        std::string after(mid + 1, which.end() - 1);
+        std::string retval = regex_replace(src, before, after);
+        return std::vector<std::string>(1, retval);
     }
     return (*pt->second)(src, lib);
 }
@@ -41,8 +41,8 @@ Emitter::Source_::~Source_() {}
 namespace {
     // static registry of emitter creators -- we do not own the pointers, they are assumed to point to static file-scope
     // objects
-    map<string, vector<const Emitter::Source_*>>& TheSources() {
-        static map<string, vector<const Emitter::Source_*>> RETVAL;
+    map<std::string, std::vector<const Emitter::Source_*>>& TheSources() {
+        static map<std::string, std::vector<const Emitter::Source_*>> RETVAL;
         return RETVAL;
     }
 
@@ -54,15 +54,15 @@ namespace {
     }
 } // namespace
 
-void Emitter::RegisterSource(const string& info_type, const Source_& src) { TheSources()[info_type].push_back(&src); }
+void Emitter::RegisterSource(const std::string& info_type, const Source_& src) { TheSources()[info_type].push_back(&src); }
 
-const Emitter::Funcs_& Emitter::GetAll(const string& info_type,
-                                       const string& path,
-                                       const vector<string>& lib) // contents of library, not file paths
+const Emitter::Funcs_& Emitter::GetAll(const std::string& info_type,
+                                       const std::string& path,
+                                       const std::vector<std::string>& lib) // contents of library, not file paths
 {
     std::cout << "Looking for " << info_type << " in " << path << "\n";
     // static registry of emitters themselves
-    static map<string, Emitter::Funcs_> RETVALS;
+    static map<std::string, Emitter::Funcs_> RETVALS;
     if (!RETVALS.count(info_type)) {
         std::cout << "Parsing...";
         Emitter::Funcs_ retval;

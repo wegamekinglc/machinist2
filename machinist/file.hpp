@@ -7,21 +7,21 @@
 #endif
 
 namespace File {
-    string Path(const string& dir_in);
-    string CombinedPath(const string& path1,
-                        const string& path2); // cd path1; cd path2; -- has to see if path2 is relative
-    string PathOnly(const string& filename);
+    std::string Path(const std::string& dir_in);
+    std::string CombinedPath(const std::string& path1,
+                        const std::string& path2); // cd path1; cd path2; -- has to see if path2 is relative
+    std::string PathOnly(const std::string& filename);
 
     void Read // appends -- does not clear dst
-        (const string& filename, vector<string>* dst);
+        (const std::string& filename, std::vector<std::string>* dst);
 
-    vector<string> List(const string& dir,
-                        const string& pattern,                  // default pattern is *.if
-                        const vector<string>& reject_patterns); // lets us exclude MG_* from scan
+    std::vector<std::string> List(const std::string& dir,
+                        const std::string& pattern,                  // default pattern is *.if
+                        const std::vector<std::string>& reject_patterns); // lets us exclude MG_* from scan
 
-    string InfoType(const string& filename);
-    string InfoName(const string& filename);
-    string DirInfoName(const string& dir);
+    std::string InfoType(const std::string& filename);
+    std::string InfoName(const std::string& filename);
+    std::string DirInfoName(const std::string& dir);
 } // namespace File
 
 #endif

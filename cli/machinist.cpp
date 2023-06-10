@@ -28,11 +28,11 @@ namespace {
     void ReadCommandLine
             (int argc,
              char *argv[],
-             string *config,
-             vector<string> *libs,
-             vector<string> *dirs) {
+             std::string *config,
+             std::vector<std::string> *libs,
+             std::vector<std::string> *dirs) {
         for (int ii = 1; ii < argc; ++ii) {
-            string arg(argv[ii]);
+            std::string arg(argv[ii]);
             REQUIRE(!arg.empty(), "machinist can't run without offering arguments");
             if (arg[0] == '-') {
                 // command-line switch
@@ -46,12 +46,12 @@ namespace {
 
                     case 'd':
                         REQUIRE(ii + 1 < argc, "-d switch must be followed by a working directory");
-                        dirs->push_back(string(argv[++ii]));    // jump forward to this input
+                        dirs->push_back(std::string(argv[++ii]));    // jump forward to this input
                         break;
 
                     case 'l':
                         REQUIRE(ii + 1 < argc, "-l must be followed by a template library filename");
-                        libs->push_back(string(argv[++ii]));    // jump forward to this input
+                        libs->push_back(std::string(argv[++ii]));    // jump forward to this input
                         break;
 
                     default:
@@ -69,7 +69,7 @@ namespace {
             dirs->push_back(".");    // the default
     }
 
-    bool SameExceptLF(const string &s1, const string &s2) {
+    bool SameExceptLF(const std::string &s1, const std::string &s2) {
         char LF(10);
         auto p1 = s1.begin(), p2 = s2.begin();
         while (p1 != s1.end() && p2 != s2.end()) {
@@ -86,21 +86,21 @@ namespace {
         return p1 == s1.end() && p2 == s2.end();
     }
 
-    bool StartsWith(const string &line, const string &token) {
+    bool StartsWith(const std::string &line, const std::string &token) {
         return line.find(token) == 0;
     }
 
-    pair<string, string> TypeAndName(const string &line) {
+    pair<std::string, std::string> TypeAndName(const std::string &line) {
         // just handle space-separated pair
         auto space = line.find(' ');
-        REQUIRE(space != 0 && space != string::npos, "Can't find type/name separator");
+        REQUIRE(space != 0 && space != std::string::npos, "Can't find type/name separator");
         return make_pair(line.substr(0, space), line.substr(space + 1));
     }
 
-    vector<string> AsDir(const vector<pair<string, string>> &types_and_names) {
+    std::vector<std::string> AsDir(const std::vector<pair<std::string, std::string>> &types_and_names) {
         // reverses the operation of File::InfoType/Name,
         // just to get things back in a format the dir emitter understands
-        vector<string> ret_val;
+        std::vector<std::string> ret_val;
         ret_val.reserve(types_and_names.size());
         for (const auto &pair : types_and_names)
             ret_val.push_back(pair.second + "." + pair.first + ".if");
@@ -108,14 +108,14 @@ namespace {
     }
 
     void WriteIfChanged
-            (const string &dst_name,
-             const vector<string> &output,
+            (const std::string &dst_name,
+             const std::vector<std::string> &output,
              int *n_written) {
         // I guess we have to read it
-        vector<string> prior;
+        std::vector<std::string> prior;
         File::Read(dst_name, &prior);
-        const string allOld = accumulate(prior.begin(), prior.end(), string(), std::plus<>());
-        const string allNew = accumulate(output.begin(), output.end(), string(), std::plus<>());
+        const std::string allOld = accumulate(prior.begin(), prior.end(), std::string(), std::plus<>());
+        const std::string allNew = accumulate(output.begin(), output.end(), std::string(), std::plus<>());
 
         if (!SameExceptLF(allOld, allNew)) {
             cout << "\tWriting " << dst_name << "\n";
@@ -128,10 +128,10 @@ namespace {
 
     void WriteFromContents
             (const Config_ &config,
-             const vector<string> &lib,
-             const string &path,
-             const pair<string, string> &type_and_name,
-             const vector<string> &content,
+             const std::vector<std::string> &lib,
+             const std::string &path,
+             const pair<std::string, std::string> &type_and_name,
+             const std::vector<std::string> &content,
              int *n_written) {
         const Emitter::Funcs_ &allFuncs = Emitter::GetAll(type_and_name.first,
                                                           File::CombinedPath(config.ownPath_, config.templatePath_),
@@ -141,10 +141,10 @@ namespace {
         auto find = config.vals_.find(type_and_name.first);
         if (find == config.vals_.end())
             return;
-        const vector<Config_::Output_> &targets = find->second;
+        const std::vector<Config_::Output_> &targets = find->second;
         for (const auto &target : targets) {
-            string dstName = path + target.dst_(*info);
-            vector<string> output;
+            std::string dstName = path + target.dst_(*info);
+            std::vector<std::string> output;
             for (const auto &emitter : target.emitters_) {
                 auto out = Emitter::Call(*info, allFuncs, emitter);
                 output.insert(output.end(), out.begin(), out.end());
@@ -163,19 +163,19 @@ namespace {
 
     void WriteInfoFile
             (const Config_ &config,
-             const vector<string> &lib,
-             const string &path,
-             const string &filename,
-             vector<pair<string, string>> *things_read,
+             const std::vector<std::string> &lib,
+             const std::string &path,
+             const std::string &filename,
+             std::vector<pair<std::string, std::string>> *things_read,
              int *n_written,
              int *n_lines) {
         cout << "Reading " << filename.c_str() << endl;
-        const string infoType = File::InfoType(filename);
+        const std::string infoType = File::InfoType(filename);
         if (!config.vals_.count(infoType)) {
             cout << "Skipping -- nothing to write" << endl;
             return;
         }
-        vector<string> content;
+        std::vector<std::string> content;
         File::Read(path + filename, &content);
         *n_lines += static_cast<int>(content.size());
         things_read->push_back(make_pair(infoType, File::InfoName(filename)));
@@ -184,12 +184,12 @@ namespace {
 
     void WriteOneFile
             (const Config_ &config,
-             const vector<string> &lib,
-             const string &path,
-             const string &filename,
-             const string &start_token,
-             const string &stop_token,
-             vector<pair<string, string>> *things_read,
+             const std::vector<std::string> &lib,
+             const std::string &path,
+             const std::string &filename,
+             const std::string &start_token,
+             const std::string &stop_token,
+             std::vector<pair<std::string, std::string>> *things_read,
              int *n_written,
              int *n_lines) {
         if (start_token.empty()) {
@@ -198,7 +198,7 @@ namespace {
         }
         cout << "Scanning " << filename.c_str() << "\n";
         cout.flush();
-        vector<string> content;
+        std::vector<std::string> content;
         File::Read(filename, &content);
         *n_lines += static_cast<int>(content.size());
         for (auto pl = content.begin(); pl != content.end(); ++pl) {
@@ -222,7 +222,7 @@ namespace {
                     cout << "Skipping -- nothing to write" << endl;
                 else {
                     things_read->push_back(typeAndName);
-                    WriteFromContents(config, lib, path, typeAndName, vector<string>(pContent, pStop), n_written);
+                    WriteFromContents(config, lib, path, typeAndName, std::vector<std::string>(pContent, pStop), n_written);
                 }
             }
         }
@@ -236,27 +236,27 @@ void XMain(int argc, char *argv[]) {
         THROW("get current working directory failed.")
     cout << "In directory " << buf << endl;
 
-    string configFile;
-    vector<string> libs, dirs;
+    std::string configFile;
+    std::vector<std::string> libs, dirs;
     ReadCommandLine(argc, argv, &configFile, &libs, &dirs);
     Config_ config = Config::Read(configFile);
     // read library contents
-    vector<string> libContents;
+    std::vector<std::string> libContents;
     for (auto &lib : libs)
         File::Read(lib, &libContents);
 
     // loop over directories
     for (auto &dir : dirs) {
         // keep track of actions in this directory only
-        vector<pair<string, string>> thingsRead;
+        std::vector<pair<std::string, std::string>> thingsRead;
         int nWritten = 0, nRead = 0, nLines = 0;
         // set directory
         cout << "Scanning " << dir << "\n";
-        const string path = File::Path(dir);
+        const std::string path = File::Path(dir);
 
         // loop over input file types
         for (auto ps = config.sources_.begin(); ps != config.sources_.end(); ++ps) {
-            vector<string> infoFiles = File::List(dir, ps->filePattern_, ps->rejectPatterns_);
+            std::vector<std::string> infoFiles = File::List(dir, ps->filePattern_, ps->rejectPatterns_);
             for (auto pi = infoFiles.begin(); pi != infoFiles.end(); ++pi, ++nRead)
                 WriteOneFile(config, libContents, path, *pi, ps->startToken_, ps->stopToken_, &thingsRead, &nWritten,
                              &nLines);
@@ -264,7 +264,7 @@ void XMain(int argc, char *argv[]) {
         cout << "Scanned " << nRead << " files (" << nLines << " lines), found " << thingsRead.size() << " blocks"
              << endl;
         // finally write the whole-directory info
-        WriteFromContents(config, libContents, path, make_pair(string("dir"), File::DirInfoName(dir)),
+        WriteFromContents(config, libContents, path, make_pair(std::string("dir"), File::DirInfoName(dir)),
                           AsDir(thingsRead), &nWritten);
 
         cout << "Wrote " << nWritten << " files" << endl;
