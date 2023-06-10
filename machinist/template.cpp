@@ -115,7 +115,7 @@ namespace {
                 ++sofar_; // don't save anything yet
             else if (c == EOF && eofOK_) {
                 seen_ += match_.substr(0, sofar_);
-                sofar_ = match_.length(); // suddenly we are done
+                sofar_ = static_cast<int>(match_.length()); // suddenly we are done
             } else
                 seen_.push_back(c);
         }

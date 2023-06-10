@@ -587,7 +587,7 @@ namespace {
         return retval; // postponed -- handle optional args?  maybe with overloading?
     }
     std::string HashedArgNumbers(const Info_& src) {
-        const int nInputs = src.children_.count("input");
+        const int nInputs = static_cast<int>(src.children_.count("input"));
         std::string retval;
         for (int ii = 0; ii < nInputs; ++ii)
             retval += '#' + DimensionString(ii + 1) + ", ";

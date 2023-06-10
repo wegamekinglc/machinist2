@@ -2,13 +2,9 @@
 #include "emitter.hpp"
 #include "info.hpp"
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <regex>
-
-Emitter_::~Emitter_() {}
-
-StringTransform_::~StringTransform_() {}
 
 std::vector<std::string> Emitter::Call(const Info_& arg, const Funcs_& lib, const std::string& which) {
     auto pf = lib.ofInfo_.find(which);
@@ -36,17 +32,15 @@ std::vector<std::string> Emitter::CallTransform(const std::string& src, const Fu
     return (*pt->second)(src, lib);
 }
 
-Emitter::Source_::~Source_() {}
-
 namespace {
     // static registry of emitter creators -- we do not own the pointers, they are assumed to point to static file-scope
     // objects
-    map<std::string, std::vector<const Emitter::Source_*>>& TheSources() {
-        static map<std::string, std::vector<const Emitter::Source_*>> RETVAL;
+    std::map<std::string, std::vector<const Emitter::Source_*>>& TheSources() {
+        static std::map<std::string, std::vector<const Emitter::Source_*>> RETVAL;
         return RETVAL;
     }
 
-    template <class K_, class V_> void MergeIn(map<K_, V_>* dst, const map<K_, V_>& contrib) {
+    template <class K_, class V_> void MergeIn(std::map<K_, V_>* dst, const std::map<K_, V_>& contrib) {
         for (auto pc = contrib.begin(); pc != contrib.end(); ++pc) {
             REQUIRE(!dst->count(pc->first), "Redefinition of emitter for " + pc->first);
             dst->insert(*pc);
@@ -62,7 +56,7 @@ const Emitter::Funcs_& Emitter::GetAll(const std::string& info_type,
 {
     std::cout << "Looking for " << info_type << " in " << path << "\n";
     // static registry of emitters themselves
-    static map<std::string, Emitter::Funcs_> RETVALS;
+    static std::map<std::string, Emitter::Funcs_> RETVALS;
     if (!RETVALS.count(info_type)) {
         std::cout << "Parsing...";
         Emitter::Funcs_ retval;
