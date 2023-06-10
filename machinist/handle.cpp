@@ -15,7 +15,7 @@ std::string EnvironmentValue(const std::string& name) {
 #else
     std::string retval;
     char* ret = getenv(name.c_str());
-    REQUIRE(ret, "Can't find '" + name + "' in environment")
+    REQUIRE(ret, "Can't find '" + name + "' in environment");
     return std::string(ret);
 #endif
 }
