@@ -1,5 +1,8 @@
 
 #include "file.hpp"
+
+HERE
+
 #include <fstream>
 #include <iostream>
 #include <istream>
@@ -22,7 +25,7 @@ namespace {
 } // namespace
 
 std::string File::Path(const std::string& dir_in) {
-    return (dir_in.empty() || dir_in == ".") ? std::string() : (IsSlash(dir_in.back()) ? dir_in : dir_in + "/");
+    return (dir_in.empty() || dir_in == ".") ? std::string() : (IsSlash(dir_in.back()) ? dir_in : dir_in + OS_SEP);
 }
 std::string File::CombinedPath(const std::string& path1, const std::string& path2) {
     return (path2.empty() || path2[0] == '.') ? path1 + path2 // path2 is relative

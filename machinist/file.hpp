@@ -1,6 +1,5 @@
 
-#ifndef MACHINIST_FILE__
-#define MACHINIST_FILE__
+#pragma once
 
 #ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
@@ -23,5 +22,3 @@ namespace File {
     std::string InfoName(const std::string& filename);
     std::string DirInfoName(const std::string& dir);
 } // namespace File
-
-#endif
