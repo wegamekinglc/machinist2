@@ -4,7 +4,7 @@
 #include "info.hpp"
 #include "parseutils.hpp"
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <numeric>
 #include <regex>

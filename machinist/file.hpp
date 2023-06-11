@@ -1,9 +1,7 @@
 
 #pragma once
 
-#ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
-#endif
 
 namespace File {
     std::string Path(const std::string& dir_in);

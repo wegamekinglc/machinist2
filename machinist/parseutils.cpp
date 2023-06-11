@@ -2,7 +2,7 @@
 #include "parseutils.hpp"
 #include "emitter.hpp"
 #include "info.hpp"
-#include <assert.h>
+#include <cassert>
 
 bool ParseUtils::IsWhite(char c) { return c == ' ' || c == '\t' || c == '\n'; }
 bool ParseUtils::StartsWithWhitespace(const std::string& line) { return line.empty() || IsWhite(line[0]); }

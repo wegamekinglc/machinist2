@@ -2,10 +2,7 @@
 #ifndef MACHINIST_TEMPLATE__
 #define MACHINIST_TEMPLATE__
 
-#ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
-#endif
-
 #include <map>
 
 using std::map;

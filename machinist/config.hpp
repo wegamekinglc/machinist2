@@ -1,13 +1,7 @@
 #pragma once
 
-#ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
-#endif
-
-#ifndef MACHINIST_EMITTER__
 #include "emitter.hpp"
-#endif
-
 #include <map>
 
 using std::map;

@@ -1,9 +1,6 @@
 #pragma once
 
-#ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
-#endif
-
 #include <map>
 #include <string>
 

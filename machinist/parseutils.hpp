@@ -2,9 +2,7 @@
 #ifndef MACHINIST_PARSEUTILS__
 #define MACHINIST_PARSEUTILS__
 
-#ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
-#endif
 
 using std::unique_ptr;
 struct Info_;
