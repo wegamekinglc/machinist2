@@ -254,7 +254,7 @@ namespace {
         }
         template <class R_> void EmitSorted(const R_& range, const Emitter::Funcs_& lib, std::vector<std::string>* dst) const {
             // copy the children into a map keyed on own content
-            multimap<std::string, Handle_<Info_>> ordered;
+            std::multimap<std::string, Handle_<Info_>> ordered;
             for (auto pc = range.first; pc != range.second; ++pc)
                 ordered.insert(make_pair(pc->second->content_, pc->second));
             EmitRaw(ordered.begin(), ordered.end(), lib, dst);

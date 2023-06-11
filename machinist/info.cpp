@@ -1,7 +1,10 @@
 
 #include "info.hpp"
+
+HERE
+
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 
 using std::unique_ptr;
@@ -12,8 +15,6 @@ bool Info::IsRoot(const Info_& i) {
     assert(!i.parent_ == (i.root_ == &i));
     return !i.parent_;
 }
-
-Info::Parser_::~Parser_() {}
 
 namespace {
     map<std::string, const Info::Parser_*>& TheParsers() {
@@ -37,7 +38,7 @@ namespace {
     int Indent(const std::string& s) {
         int retval = 0;
         for (auto pc = s.begin(); pc != s.end(); ++pc, ++retval)
-            if (*pc != '\t')
+            if (*pc != '\t' && *pc != ' ')
                 break;
         return retval;
     }
@@ -80,7 +81,7 @@ namespace {
             std::cout << "Here";
         REQUIRE(!parent || info.parent_ == parent, "Bad parent of '" + info.content_ + "'");
         REQUIRE(!root || info.root_ == root, "Bad root");
-        for (auto c : info.children_)
+        for (const auto& c : info.children_)
             CheckBackPointers(*c.second, &info, root ? root : info.root_);
     }
 } // namespace
@@ -99,6 +100,7 @@ void Info::RegisterParser(const std::string& type, const Info::Parser_& parser) 
     std::cout << "Registering parser for " << type << "\n";
     assert(!TheParsers().count(type));
     TheParsers()[type] = &parser;
+    std::cout << type << " done\n";
 }
 
 Info::Path_::Path_(const std::string& src) : absolute_(false) {
@@ -108,7 +110,7 @@ Info::Path_::Path_(const std::string& src) : absolute_(false) {
             absolute_ = true;
         } else {
             auto stop = find(start, src.end(), '/');
-            childNames_.push_back(std::string(start, stop));
+            childNames_.emplace_back(start, stop);
             start = stop; // don't need to skip the '/', the increment will do that
             if (start == src.end())
                 break;
@@ -116,32 +118,46 @@ Info::Path_::Path_(const std::string& src) : absolute_(false) {
     }
 }
 
+namespace {
+    std::string ShowPath(const Info_& here) {
+        std::string retval = here.content_;
+        for (const Info_* parent = here.parent_; parent && parent != &here; parent = parent->parent_) {
+            retval = parent->content_ + "/" + retval;
+            if (parent->parent_ == parent) {
+                break;
+            }
+        }
+        return retval;
+    }
+
+}  // namespace <un-named>
+
 const Info_& Info::Path_::operator()(const Info_& here, bool quiet) const {
     static const Handle_<Info_> FALSE = MakeLeaf(nullptr, nullptr, std::string());
     const Info_* retval = absolute_ ? here.root_ : &here;
     for (auto pc = childNames_.begin(); pc != childNames_.end(); ++pc) {
-        const char step = '1' + (pc - childNames_.begin());
+        const char step = '1' + static_cast<char>(pc - childNames_.begin());
         if (!retval) {
-            REQUIRE(quiet, "Path navigation failed before step " + std::string(1, step));
+            REQUIRE(quiet, "Path navigation failed before step " + std::string(1, step) + " in " + ShowPath(here));
             return *FALSE;
         }
         if (*pc == "..") {
-            REQUIRE(retval->parent_, "No parent to navigate to");
+            REQUIRE(retval->parent_, "No parent to navigate to int " + ShowPath(here));
             retval = retval->parent_;
         } else if (*pc != ".") {
             auto cr = retval->children_.equal_range(*pc);
             if (cr.first == cr.second) {
                 REQUIRE(quiet,
-                        "Path navigation failed at step " + std::string(1, step) + ":  child '" + *pc + "' not found");
+                        "Path navigation failed at step " + std::string(1, step) + ":  child '" + *pc + "' not found in " + ShowPath(here));
                 return *FALSE;
             }
             REQUIRE(cr.first == --cr.second, "Path navigation failed at step " + std::string(1, step) + ":  child '" + *pc +
-                                                 "' not unique"); // Next(cr.first) doesn't work due to compiler bug
+                                                 "' not unique in " + ShowPath(here)); // Next(cr.first) doesn't work due to compiler bug
             retval = cr.first->second.get();
         }
     }
     if (!retval) {
-        REQUIRE(quiet, "Path navigation failed at final step");
+        REQUIRE(quiet, "Path navigation failed at final step in " + ShowPath(here));
         return *FALSE;
     }
     return *retval;

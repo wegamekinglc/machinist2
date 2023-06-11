@@ -1,6 +1,4 @@
-
-#ifndef MACHINIST_INFO__
-#define MACHINIST_INFO__
+#pragma once
 
 #ifndef MACHINIST_HANDLE__
 #include "handle.hpp"
@@ -8,8 +6,6 @@
 
 #include <map>
 #include <string>
-
-using std::multimap;
 
 // Info_ structure contains the high-level description of an object
 struct Info_ {
@@ -19,7 +15,7 @@ struct Info_ {
             root_ = this;
     }
     std::string content_; // content at this level
-    multimap<std::string, Handle_<Info_>> children_;
+    std::multimap<std::string, Handle_<Info_>> children_;
     const Info_* parent_;
     const Info_* root_;
 };
@@ -30,7 +26,7 @@ namespace Info {
     Info_* Parse(const std::string& type, const std::string& name, const std::vector<std::string>& content);
 
     struct Parser_ {
-        virtual ~Parser_();
+        virtual ~Parser_() = default;
         virtual Info_* operator()(const std::string& info_name, const std::vector<std::string>& content) const = 0;
     };
 
@@ -40,12 +36,10 @@ namespace Info {
     struct Path_ {
         bool absolute_;
         std::vector<std::string> childNames_;
-        Path_(const std::string& text); // parses a path -- '/' is the separator
+        explicit Path_(const std::string& text); // parses a path -- '/' is the separator
         const Info_& operator()(const Info_& here, bool quiet) const;
     };
 
     // a generally useful function
     Handle_<Info_> MakeLeaf(const Info_* parent, const Info_* root, const std::string& content);
 } // namespace Info
-
-#endif
