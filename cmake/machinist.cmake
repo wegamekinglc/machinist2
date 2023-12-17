@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 macro(configure_msvc_runtime)
     # Credit: https://stackoverflow.com/questions/10113017/setting-the-msvc-runtime-in-cmake
