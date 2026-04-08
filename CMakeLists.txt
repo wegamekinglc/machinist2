@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.21.0)
 
 project(machinist VERSION 1.0.0)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "") # works
@@ -19,14 +19,17 @@ if(MSVC)
     configure_msvc_runtime()
 
     # Remove warnings
-    add_compile_options(/std:c++20)
+    add_compile_options(/std:c++17)
     add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD 17)
 else()
-    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD 17)
 endif()
 
+set(MACHINIST_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+message("-- MACHINIST_SRC_DIR: ${MACHINIST_SRC_DIR}")
+message("-- MSVC_RUNTIME: ${MSVC_RUNTIME}")
 message("-- CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 message("-- CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
 

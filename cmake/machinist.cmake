@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.15.0)
 
+if (CMAKE_C++_COMPILER_ID STREQUAL "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+        link_libraries(stdc++fs)
+    endif()
+endif()
+
 macro(configure_msvc_runtime)
     # Credit: https://stackoverflow.com/questions/10113017/setting-the-msvc-runtime-in-cmake
     if (MSVC)
