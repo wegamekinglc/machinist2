@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15.0)
 
-if (CMAKE_C++_COMPILER_ID STREQUAL "GNU")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
         link_libraries(stdc++fs)
     endif()
