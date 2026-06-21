@@ -46,7 +46,7 @@ static XlRegister_%_()_ The_%_()_XlRegisterer;
 }` endif not suppress/excel
 %:ExcelTranslateInput:
         argName = "%_() (input #%#())";
-        const %CType() %_(myname) = Excel::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(%HandleEnv()xl_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true}%?{%_(greedy)}{%~{%IsOptional()}{, false}, true})%*[default]{.get_value_or(%PassDefault())};`
+        const %CType() %_(myname) = Excel::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(%HandleEnv()xl_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true}%?{%_(greedy)}{%~{%IsOptional()}{, false}, true})%*[default]{.value_or(%PassDefault())};`
 %*[insert]{
         %_()}`
 %*[condition]{
@@ -113,7 +113,7 @@ static PyRegister_%_()_ The_%_()_PyRegisterer;
 }` endif not suppress/python
 %:PythonTranslateInput:
         argName = "%_()";
-        const %CType() %_(myname) = Python::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(pyReader->Next(argName)%*[intype]{, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%PassDefault())};`
+        const %CType() %_(myname) = Python::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(pyReader->Next(argName)%*[intype]{, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.value_or(%PassDefault())};`
 %*[insert]{
         %_()}`
 `
@@ -344,7 +344,7 @@ JNIEXPORT jobject JNICALL Java_%/\./_/<%JClass()>_native%_()
 (%*[output]{%JNI_SignatureType()})V`
 %:JNI_TranslateInput:`
         argName = "%_() (input #%#())";
-        const %CType() %_(myname) = JNI::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(jenv, j_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.get_value_or(%PassDefault())};`
+        const %CType() %_(myname) = JNI::%CTypeTranslator()%*[intype]{_or%_()}%CSubTypeAngleBracket()(jenv, j_%_()%*[intype]({, %InTypeTranslator()}%?{%IsOptional()}{, true})%*[default]{.value_or(%PassDefault())};`
 %:JNI_DeclareInput:%JNI_NativeType() j_%_()`
 %:JNI_TranslateOutput:auto %_()_ret = JNI::CopyOut(jenv, %_());`
 `
