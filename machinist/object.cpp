@@ -412,7 +412,7 @@ namespace {
         switch (Dimension(src)) {
         default:
         case 0:
-            return (!HasCanonicalDefault(type) && SpecificDefault(src) == ".") ? "boost::optional<" + scalar + ">"
+            return (!HasCanonicalDefault(type) && SpecificDefault(src) == ".") ? "std::optional<" + scalar + ">"
                                                                                : scalar;
         case 1:
             return "Vector_<" + scalar + ">";
@@ -427,7 +427,7 @@ namespace {
             return "Vector_<" + (retval.back() == '>' ? retval + ' ' : retval) + ">";
         if (src.children_.count(OPTIONAL) && !src.children_.count(MULTIPLE) && !HasSpecificDefault(src) &&
             Dimension(src) == 0 && !HasCanonicalDefault(GetMandatory(src, TYPE)))
-            return "boost::optional<" + retval + ">";
+            return "std::optional<" + retval + ">";
         return retval;
     }
 

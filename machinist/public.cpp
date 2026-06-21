@@ -426,7 +426,7 @@ namespace {
         case 0:
             return (!GetOptional(src, OPTIONAL).empty() && !HasCanonicalDefault(type) &&
                     GetOptional(src, DEFAULT).empty()) // optionals with a default always end up with a value
-                       ? "boost::optional<" + scalar + ">"
+                       ? "std::optional<" + scalar + ">"
                        : scalar;
         case 1:
             return "Vector_<" + scalar + ">";
